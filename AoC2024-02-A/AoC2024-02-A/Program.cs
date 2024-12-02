@@ -58,6 +58,22 @@ bool isRowSafe(IList<int> intList)
         && (getMaxDiff(intList) <= 3);
 }
 
+IList<IList<int>> getProblemDampenerOptions(IList<int> intList)
+{
+    var options = new List<IList<int>>();
+
+    for (int ignore = 0; ignore < intList.Count; ++ignore)
+    {
+        var newList = new List<int>(intList);
+
+        newList.RemoveAt(ignore);
+
+        options.Add(newList);
+    }
+
+    return options;
+}
+
 string inputFilePath = Path.Combine(AppContext.BaseDirectory, "input.txt");
 string inputFileContents = await File.ReadAllTextAsync(inputFilePath);
 
@@ -81,6 +97,19 @@ foreach (IList<int> intList in rowList)
     if (isRowSafe(intList))
     {
         safeRowCount++;
+    }
+    else
+    {
+        IList<IList<int>> pdOptions = getProblemDampenerOptions(intList);
+
+        foreach (IList<int> pdList in pdOptions)
+        {
+            if (isRowSafe(pdList))
+            {
+                safeRowCount++;
+                break;
+            }
+        }
     }
 }
 
