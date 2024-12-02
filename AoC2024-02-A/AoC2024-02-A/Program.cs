@@ -1,8 +1,8 @@
-﻿bool onlyIncreasing(int[] intArray)
+﻿bool onlyIncreasing(IList<int> intList)
 {
-    for (int i = 0; i < intArray.Length - 1; ++i)
+    for (int i = 0; i < intList.Count - 1; ++i)
     {
-        if (intArray[i + 1] < intArray[i])
+        if (intList[i + 1] < intList[i])
         {
             return false;
         }
@@ -11,11 +11,11 @@
     return true;
 }
 
-bool onlyDecreasing(int[] intArray)
+bool onlyDecreasing(IList<int> intList)
 {
-    for (int i = 0; i < intArray.Length - 1; ++i)
+    for (int i = 0; i < intList.Count - 1; ++i)
     {
-        if (intArray[i + 1] > intArray[i])
+        if (intList[i + 1] > intList[i])
         {
             return false;
         }
@@ -24,44 +24,44 @@ bool onlyDecreasing(int[] intArray)
     return true;
 }
 
-int getMaxDiff(int[] intArray)
+int getMaxDiff(IList<int> intList)
 {
     int maxDiff = 0;
 
-    for (int i = 0; i < intArray.Length - 1; ++i)
+    for (int i = 0; i < intList.Count - 1; ++i)
     {
-        maxDiff = Math.Max(maxDiff, Math.Abs(intArray[i + 1] - intArray[i]));
+        maxDiff = Math.Max(maxDiff, Math.Abs(intList[i + 1] - intList[i]));
     }
 
     return maxDiff;
 }
 
-int getMinDiff(int[] intArray)
+int getMinDiff(IList<int> intList)
 {
-    int minDiff = Math.Abs(intArray[1] - intArray[0]);
+    int minDiff = Math.Abs(intList[1] - intList[0]);
 
-    for (int i = 1; i < intArray.Length - 1; ++i)
+    for (int i = 1; i < intList.Count - 1; ++i)
     {
-        minDiff = Math.Min(minDiff, Math.Abs(intArray[i + 1] - intArray[i]));
+        minDiff = Math.Min(minDiff, Math.Abs(intList[i + 1] - intList[i]));
     }
 
     return minDiff;
 }
 
-bool isRowSafe(int[] intArray)
+bool isRowSafe(IList<int> intList)
 {
     return (
-            onlyIncreasing(intArray)
-            || onlyDecreasing(intArray)
+            onlyIncreasing(intList)
+            || onlyDecreasing(intList)
         )
-        && (getMinDiff(intArray) >= 1)
-        && (getMaxDiff(intArray) <= 3);
+        && (getMinDiff(intList) >= 1)
+        && (getMaxDiff(intList) <= 3);
 }
 
 string inputFilePath = Path.Combine(AppContext.BaseDirectory, "input.txt");
 string inputFileContents = await File.ReadAllTextAsync(inputFilePath);
 
-var rowList = new List<int[]>();
+var rowList = new List<IList<int>>();
 
 foreach (string inputRow in inputFileContents.Split(
     Environment.NewLine, StringSplitOptions.RemoveEmptyEntries))
@@ -69,16 +69,16 @@ foreach (string inputRow in inputFileContents.Split(
     string[] strArray
         = inputRow.Split(" ", StringSplitOptions.RemoveEmptyEntries);
 
-    int[] intArray = strArray.Select((s) => Convert.ToInt32(s)).ToArray();
+    IList<int> intList = strArray.Select((s) => Convert.ToInt32(s)).ToList();
 
-    rowList.Add(intArray);
+    rowList.Add(intList);
 }
 
 int safeRowCount = 0;
 
-foreach (int[] intArray in rowList)
+foreach (IList<int> intList in rowList)
 {
-    if (isRowSafe(intArray))
+    if (isRowSafe(intList))
     {
         safeRowCount++;
     }
