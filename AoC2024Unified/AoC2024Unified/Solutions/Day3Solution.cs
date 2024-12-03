@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using AoC2024Unified.ThreeLang;
 
 namespace AoC2024Unified.Solutions
 {
@@ -54,38 +55,11 @@ namespace AoC2024Unified.Solutions
 
         private static async Task<int> SolveB(string dayNum, bool isReal)
         {
-            const string instrOn = "do()";
-            const string instrOff = "don't()";
-
             string inputString = await Common.ReadFile(dayNum, isReal);
 
-            var instrPositions = new List<(int, bool)>();
+            var parser = new ThreeLangParser(inputString);
 
-            AddIndexes(instrPositions, inputString, instrOn, true);
-            AddIndexes(instrPositions, inputString, instrOff, false);
-
-            instrPositions.Sort((x, y) => x.Item1.CompareTo(y.Item1));
-
-            var newInputSb = new StringBuilder();
-
-            newInputSb.Append(inputString[..instrPositions[0].Item1]);
-
-            for (int i = 0; i < instrPositions.Count; ++i)
-            {
-                (int, bool) item = instrPositions[i];
-
-                if (item.Item2)
-                {
-                    int nextIndex = instrPositions.Count <= i + 1
-                        ? inputString.Length - 1
-                        : instrPositions[i + 1].Item1;
-
-                    newInputSb.Append(
-                        inputString[item.Item1..nextIndex]);
-                }
-            }
-
-            return SolveA(newInputSb.ToString());
+            return parser.ParseCode();
         }
 
         public async Task Solve(bool isReal)
@@ -104,7 +78,7 @@ namespace AoC2024Unified.Solutions
                 totalB = await SolveB($"{DayNum}b", isReal);
             }
 
-            Console.WriteLine($"The totals are A:{totalA}, B:{totalB}.");
+            Console.WriteLine($"The totals are A:{totalA}, B:{totalB}");
         }
     }
 }
