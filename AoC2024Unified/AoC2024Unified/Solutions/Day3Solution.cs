@@ -85,11 +85,6 @@ namespace AoC2024Unified.Solutions
                 }
             }
 
-            // There is a bug here: We've effectively removed the "don't()"
-            // sections. If the input text had something like
-            // "mudon't()fdsfdfdsfdsfdsffdo()l(2,3)"
-            // this would turn into mul(2,3) and do an extra multiplication.
-            // I might fix this later.
             return SolveA(newInputSb.ToString());
         }
 
