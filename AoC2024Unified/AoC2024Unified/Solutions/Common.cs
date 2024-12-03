@@ -4,7 +4,7 @@ namespace AoC2024Unified.Solutions
 {
     public static class Common
     {
-        public static async Task<string> ReadFile(int day, bool isReal)
+        public static async Task<string> ReadFile(string day, bool isReal)
         {
             string fileName = $"{(isReal ? "real" : "test")}{day}.txt";
             string inputFilePath = Path.Combine(
@@ -15,7 +15,7 @@ namespace AoC2024Unified.Solutions
         }
 
         public static async Task<NumberRowList> ReadNumberRows(
-            int day, bool isReal)
+            string day, bool isReal)
         {
             string inputFileContents = await ReadFile(day, isReal);
 

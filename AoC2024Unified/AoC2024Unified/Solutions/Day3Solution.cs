@@ -12,7 +12,7 @@ namespace AoC2024Unified.Solutions
 
         public async Task Solve(bool isReal)
         {
-            string inputString = await Common.ReadFile(DayNum, isReal);
+            string inputString = await Common.ReadFile($"{DayNum}", isReal);
 
             string pattern = @"mul\((?<num1>[0-9]+),(?<num2>[0-9]+)\)";
 
