@@ -10,9 +10,9 @@ namespace AoC2024Unified.Solutions
     {
         const int DayNum = 3;
 
-        public async Task Solve(bool isReal)
+        private static async Task SolveA(string dayNum, bool isReal)
         {
-            string inputString = await Common.ReadFile($"{DayNum}", isReal);
+            string inputString = await Common.ReadFile(dayNum, isReal);
 
             string pattern = @"mul\((?<num1>[0-9]+),(?<num2>[0-9]+)\)";
 
@@ -31,6 +31,26 @@ namespace AoC2024Unified.Solutions
             }
 
             Console.WriteLine($"The total is {total}.");
+        }
+
+        private static async Task SolveB(string dayNum, bool isReal)
+        {
+            await Task.Delay(0);
+        }
+
+        public async Task Solve(bool isReal)
+        {
+            if (isReal)
+            {
+                string dayNum = $"{DayNum}";
+                await SolveA(dayNum, isReal);
+                await SolveB(dayNum, isReal);
+            }
+            else
+            {
+                await SolveA($"{DayNum}a", isReal);
+                await SolveB($"{DayNum}b", isReal);
+            }
         }
     }
 }
