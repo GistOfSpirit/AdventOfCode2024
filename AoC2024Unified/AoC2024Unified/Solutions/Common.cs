@@ -35,5 +35,16 @@ namespace AoC2024Unified.Solutions
 
             return rowList;
         }
+
+        public static async Task<string[]> ReadFileAsMatrix(
+            string day, bool isReal)
+        {
+            string fileContents = await ReadFile(day, isReal);
+
+            string[] rows = fileContents.Split(Environment.NewLine,
+                StringSplitOptions.RemoveEmptyEntries);
+
+            return rows;
+        }
     }
 }
