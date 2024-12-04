@@ -33,9 +33,9 @@ namespace AoC2024Unified.Solutions
             return total;
         }
 
-        private static async Task<int> SolveA(string dayNum, bool isReal)
+        private static async Task<int> SolveA(bool isReal, string sub = "")
         {
-            string inputString = await Common.ReadFile(dayNum, isReal);
+            string inputString = await Common.ReadFile(isReal, DayNum, sub);
 
             return SolveA(inputString);
         }
@@ -53,9 +53,9 @@ namespace AoC2024Unified.Solutions
             }
         }
 
-        private static async Task<int> SolveB(string dayNum, bool isReal)
+        private static async Task<int> SolveB(bool isReal, string sub = "")
         {
-            string inputString = await Common.ReadFile(dayNum, isReal);
+            string inputString = await Common.ReadFile(isReal, DayNum, sub);
 
             var parser = new ThreeLangParser(inputString);
 
@@ -68,14 +68,13 @@ namespace AoC2024Unified.Solutions
 
             if (isReal)
             {
-                string dayNum = $"{DayNum}";
-                totalA = await SolveA(dayNum, isReal);
-                totalB = await SolveB(dayNum, isReal);
+                totalA = await SolveA(isReal);
+                totalB = await SolveB(isReal);
             }
             else
             {
-                totalA = await SolveA($"{DayNum}a", isReal);
-                totalB = await SolveB($"{DayNum}b", isReal);
+                totalA = await SolveA(isReal, "a");
+                totalB = await SolveB(isReal, "b");
             }
 
             Console.WriteLine($"The totals are A:{totalA}, B:{totalB}");

@@ -88,7 +88,7 @@ namespace AoC2024Unified.Solutions
         public async Task Solve(bool isReal)
         {
             NumberRowList rowList = await Common.ReadNumberRows(
-                $"{DayNum}", isReal);
+                isReal, DayNum);
 
             int safeRowCount = 0;
             int safePDRowCount = 0;

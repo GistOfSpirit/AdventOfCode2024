@@ -28,33 +28,6 @@ namespace AoC2024Unified.Solutions
                 int i = -halfPatternLength;
                 i <= halfPatternLength; ++i)
             {
-                try
-                {
-                    var x = matrix[row + i];
-                }
-                catch (IndexOutOfRangeException ex)
-                {
-
-                }
-
-                try
-                {
-                    var x = matrix[row + i][col + i];
-                }
-                catch (IndexOutOfRangeException ex)
-                {
-
-                }
-
-                try
-                {
-                    var x = Pattern[i + halfPatternLength];
-                }
-                catch (IndexOutOfRangeException ex)
-                {
-
-                }
-
                 if (
                     isForwards
                     && (matrix[row + i][col + i]
@@ -114,7 +87,7 @@ namespace AoC2024Unified.Solutions
         public async Task Solve(bool isReal)
         {
             string[] matrix = await Common.ReadFileAsMatrix(
-                $"{DayNum}", isReal);
+                isReal, DayNum);
 
             int halfPatternLength = Pattern.Length / 2;
 

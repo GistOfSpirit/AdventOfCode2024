@@ -120,7 +120,7 @@ namespace AoC2024Unified.Solutions
         public async Task Solve(bool isReal)
         {
             string[] matrix = await Common.ReadFileAsMatrix(
-                $"{DayNum}", isReal);
+                isReal, DayNum);
 
             int total = 0;
 

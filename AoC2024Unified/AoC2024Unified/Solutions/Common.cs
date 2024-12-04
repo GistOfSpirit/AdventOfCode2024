@@ -4,9 +4,10 @@ namespace AoC2024Unified.Solutions
 {
     public static class Common
     {
-        public static async Task<string> ReadFile(string day, bool isReal)
+        public static async Task<string> ReadFile(bool isReal, int day,
+            string sub = "")
         {
-            string fileName = $"{(isReal ? "real" : "test")}{day}.txt";
+            string fileName = $"{(isReal ? "real" : "test")}{day}{sub}.txt";
             string inputFilePath = Path.Combine(
                 AppContext.BaseDirectory, "inputs", fileName);
             string inputFileContents
@@ -15,9 +16,9 @@ namespace AoC2024Unified.Solutions
         }
 
         public static async Task<NumberRowList> ReadNumberRows(
-            string day, bool isReal)
+            bool isReal, int day, string sub = "")
         {
-            string inputFileContents = await ReadFile(day, isReal);
+            string inputFileContents = await ReadFile(isReal, day, sub);
 
             var rowList = new NumberRowList();
 
@@ -37,9 +38,9 @@ namespace AoC2024Unified.Solutions
         }
 
         public static async Task<string[]> ReadFileAsMatrix(
-            string day, bool isReal)
+            bool isReal, int day, string sub = "")
         {
-            string fileContents = await ReadFile(day, isReal);
+            string fileContents = await ReadFile(isReal, day, sub);
 
             string[] rows = fileContents.Split(Environment.NewLine,
                 StringSplitOptions.RemoveEmptyEntries);
