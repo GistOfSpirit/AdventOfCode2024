@@ -8,6 +8,6 @@ var daySolutions = new IDaySolution[]{
 };
 
 int dayNum = 4;
-bool isReal = true;
+bool isReal = false;
 
 await daySolutions[dayNum - 1].Solve(isReal);
