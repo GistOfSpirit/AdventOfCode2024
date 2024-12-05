@@ -36,10 +36,60 @@ namespace AoC2024Unified.Solutions
             return true;
         }
 
-        private static NumberRowList GetCorrectRows(Day5Input input)
-            => new(input.PageUpdates
-                .Where((u) => IsRowCorrect(input.OrderingRules, u))
-                .ToList());
+        private static List<int> FixRow(NumberRowList rules, List<int> row)
+        {
+            var fixedRow = new List<int>(row);
+
+            fixedRow.Sort((x, y) =>
+            {
+                var xMustBeAfter = rules
+                    .Where((r) => r[1] == x)
+                    .Select((r) => r[0])
+                    .ToList();
+
+                if (xMustBeAfter.Contains(y))
+                {
+                    return 1;
+                }
+
+                var xMustBeBefore = rules
+                    .Where((r) => r[0] == x)
+                    .Select((r) => r[1])
+                    .ToList();
+
+                if (xMustBeBefore.Contains(y))
+                {
+                    return -1;
+                }
+
+                return 0;
+            });
+
+            return fixedRow;
+        }
+
+        private static (
+            NumberRowList correctRows,
+            NumberRowList incorrectRows
+        ) SplitCorrectRows(Day5Input input)
+        {
+            var correctRows = new NumberRowList();
+            var incorrectRows = new NumberRowList();
+
+            foreach (List<int> row in input.PageUpdates)
+            {
+                if (IsRowCorrect(input.OrderingRules, row))
+                {
+                    correctRows.Add(row);
+                }
+                else
+                {
+                    incorrectRows.Add(row);
+                }
+            }
+
+            return (correctRows, incorrectRows);
+        }
 
         private static int GetRowMiddle(List<int> row)
             => row[row.Count / 2];
@@ -50,11 +100,18 @@ namespace AoC2024Unified.Solutions
 
             var inputData = Day5Input.Parse(inputText);
 
-            NumberRowList correctRows = GetCorrectRows(inputData);
+            var (correctRows, incorrectRows) = SplitCorrectRows(inputData);
 
-            int total = correctRows.Sum(GetRowMiddle);
+            int totalOfCorrect = correctRows.Sum(GetRowMiddle);
 
-            Console.WriteLine($"The total of middles is {total}");
+            NumberRowList fixedRows = [..incorrectRows
+                .Select((r) => FixRow(inputData.OrderingRules, r))
+                .ToList()];
+
+            int totalOfFixed = fixedRows.Sum(GetRowMiddle);
+
+            Console.WriteLine($"The total of middles is {totalOfCorrect}");
+            Console.WriteLine($"The total of fixed middles is {totalOfFixed}");
         }
     }
 }
