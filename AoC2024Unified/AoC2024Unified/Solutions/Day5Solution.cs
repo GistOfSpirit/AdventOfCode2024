@@ -11,6 +11,11 @@ namespace AoC2024Unified.Solutions
                 .Select((r) => r[1])
                 .ToList();
 
+        private static List<int> GetPagesBefore(NumberRowList rules, int page)
+            => rules.Where((r) => r[1] == page)
+                .Select((r) => r[0])
+                .ToList();
+
         private static bool IsRowCorrect(NumberRowList rules, List<int> row)
         {
             for (int i = 0; i < row.Count; ++i)
@@ -38,20 +43,14 @@ namespace AoC2024Unified.Solutions
 
             fixedRow.Sort((x, y) =>
             {
-                var xMustBeAfter = rules
-                    .Where((r) => r[1] == x)
-                    .Select((r) => r[0])
-                    .ToList();
+                var xMustBeAfter = GetPagesBefore(rules, x);
 
                 if (xMustBeAfter.Contains(y))
                 {
                     return 1;
                 }
 
-                var xMustBeBefore = rules
-                    .Where((r) => r[0] == x)
-                    .Select((r) => r[1])
-                    .ToList();
+                var xMustBeBefore = GetPagesAfter(rules, x);
 
                 if (xMustBeBefore.Contains(y))
                 {
