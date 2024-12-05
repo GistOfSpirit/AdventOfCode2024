@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using AoC2024Unified.ThreeLang;
 
 namespace AoC2024Unified.Solutions
@@ -38,19 +33,6 @@ namespace AoC2024Unified.Solutions
             string inputString = await Common.ReadFile(isReal, DayNum, sub);
 
             return SolveA(inputString);
-        }
-
-        private static void AddIndexes(List<(int, bool)> list,
-            string input, string instr, bool value)
-        {
-            MatchCollection matches = Regex.Matches(input, Regex.Escape(instr),
-                RegexOptions.None, TimeSpan.FromSeconds(3))
-                ?? throw new InvalidOperationException("Null object matches");
-
-            foreach (Match match in matches)
-            {
-                list.Add((match.Index, value));
-            }
         }
 
         private static async Task<int> SolveB(bool isReal, string sub = "")
