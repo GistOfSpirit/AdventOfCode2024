@@ -4,10 +4,11 @@ var daySolutions = new IDaySolution[]{
     new Day1Solution(),
     new Day2Solution(),
     new Day3Solution(),
-    new Day4Solution()
+    new Day4Solution(),
+    new Day5Solution()
 };
 
-int dayNum = 4;
+int dayNum = 5;
 bool isReal = false;
 
 await daySolutions[dayNum - 1].Solve(isReal);
