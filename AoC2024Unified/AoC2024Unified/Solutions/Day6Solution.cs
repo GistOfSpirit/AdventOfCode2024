@@ -13,6 +13,13 @@ namespace AoC2024Unified.Solutions
         private const char GuardEast = '>';
         private const char GuardVisited = 'X';
 
+        private enum AdvancementResult
+        {
+            InMap,
+            OffMap,
+            Revisit
+        }
+
         private struct GuardPointDir
         {
             public int X { get; set; }
@@ -91,8 +98,9 @@ namespace AoC2024Unified.Solutions
             => loc.X < 0 || loc.X >= map[0].Length
                 || loc.Y < 0 || loc.Y >= map.Length;
 
-        private static bool AdvanceGuard(string[] map, ref Point loc,
-            List<GuardPointDir> metObstacles)
+        private static AdvancementResult AdvanceGuard(string[] map,
+            List<GuardPointDir> metObstacles, ref Point loc,
+            List<Point>? retconSpots = null)
         {
             char guard = map[loc.Y][loc.X];
 
@@ -109,21 +117,56 @@ namespace AoC2024Unified.Solutions
             if (IsOutsideMap(map, newLoc))
             {
                 Common.UpdateMatrix(map, loc, GuardVisited);
-                return true;
+                return AdvancementResult.OffMap;
             }
             else if (HasObstacle(map, newLoc))
             {
+                // Local non-ref copy to use in lambda
+                Point location = loc;
+
+                if (metObstacles.Any(
+                    (o) => o.Direction == guard
+                    && o.X == location.X
+                    && o.Y == location.Y
+                ))
+                {
+                    return AdvancementResult.Revisit;
+                }
+
                 metObstacles.Add(new GuardPointDir(loc, guard));
                 TurnGuard(map, loc);
             }
             else
             {
+                if (retconSpots != null)
+                {
+                    string[] mapCopy = (string[])map.Clone();
+                    Point locCopy = loc;
+                    var metObstaclesCopy
+                        = new List<GuardPointDir>(metObstacles);
+
+                    TurnGuard(mapCopy, locCopy);
+
+                    AdvancementResult result;
+
+                    do
+                    {
+                        result = AdvanceGuard(
+                            mapCopy, metObstaclesCopy, ref locCopy);
+                    } while (result == AdvancementResult.InMap);
+
+                    if (result == AdvancementResult.Revisit)
+                    {
+                        retconSpots.Add(newLoc);
+                    }
+                }
+
                 Common.UpdateMatrix(map, loc, GuardVisited);
                 Common.UpdateMatrix(map, newLoc, guard);
                 loc = newLoc;
             }
 
-            return false;
+            return AdvancementResult.InMap;
         }
 
         private static int CountVisited(string[] map)
@@ -136,15 +179,26 @@ namespace AoC2024Unified.Solutions
             Point guardLoc = LocateGuard(map);
 
             var metObstacles = new List<GuardPointDir>();
-            var possRetconSpots = new List<Point>();
+            var retconSpots = new List<Point>();
 
-            while (!AdvanceGuard(map, ref guardLoc, metObstacles)) { }
+            AdvancementResult result;
+
+            do
+            {
+                result = AdvanceGuard(
+                    map, metObstacles, ref guardLoc, retconSpots);
+            } while (result == AdvancementResult.InMap);
+
+            if (result == AdvancementResult.Revisit)
+            {
+                throw new InvalidOperationException("Revisit on unedited path");
+            }
 
             int totalVisited = CountVisited(map);
 
             Console.WriteLine($"The guard has visited {totalVisited} spots");
             Console.WriteLine(
-                $"Possible retcon spots: {possRetconSpots.Count}");
+                $"Possible retcon spots: {retconSpots.Count}");
         }
     }
 }
