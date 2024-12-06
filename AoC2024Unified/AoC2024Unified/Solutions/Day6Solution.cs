@@ -13,6 +13,41 @@ namespace AoC2024Unified.Solutions
         private const char GuardEast = '>';
         private const char GuardVisited = 'X';
 
+        private struct GuardPointDir
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+
+            private char _direction;
+
+            public char Direction
+            {
+                get => _direction;
+                set
+                {
+                    if (
+                        value != GuardNorth
+                        && value != GuardSouth
+                        && value != GuardWest
+                        && value != GuardEast
+                    )
+                    {
+                        throw new InvalidOperationException(
+                            "Invalid guard char");
+                    }
+
+                    _direction = value;
+                }
+            }
+
+            public GuardPointDir(Point loc, char dir)
+            {
+                X = loc.X;
+                Y = loc.Y;
+                Direction = dir;
+            }
+        }
+
         private static Point LocateGuard(string[] map)
         {
             for (int row = 0; row < map.Length; ++row)
@@ -32,19 +67,22 @@ namespace AoC2024Unified.Solutions
         private static bool HasObstacle(string[] map, Point loc)
             => map[loc.Y][loc.X] == Obstacle;
 
-        private static void TurnGuard(string[] map, Point loc)
-        {
-            char guard = map[loc.Y][loc.X];
-
-            var newGuard = guard switch
+        private static char GetNextGuardDirection(char guard)
+            => guard switch
             {
                 GuardNorth => GuardEast,
                 GuardSouth => GuardWest,
                 GuardWest => GuardNorth,
                 GuardEast => GuardSouth,
                 _ => throw new InvalidOperationException(
-                    "Guard not where expected")
+                    "Invalid guard char")
             };
+
+        private static void TurnGuard(string[] map, Point loc)
+        {
+            char guard = map[loc.Y][loc.X];
+
+            var newGuard = GetNextGuardDirection(guard);
 
             Common.UpdateMatrix(map, loc, newGuard);
         }
@@ -53,7 +91,39 @@ namespace AoC2024Unified.Solutions
             => loc.X < 0 || loc.X >= map[0].Length
                 || loc.Y < 0 || loc.Y >= map.Length;
 
-        private static bool AdvanceGuard(string[] map, ref Point loc)
+        private static bool WouldMeetMetObstacleIfTurned(
+            List<GuardPointDir> metObstacles, char guardDir, Point loc)
+            => GetNextGuardDirection(guardDir) switch
+            {
+                GuardNorth => metObstacles
+                    .Any(
+                        (o) => o.Direction == GuardNorth
+                        && o.X == loc.X
+                        && o.Y <= loc.Y
+                    ),
+                GuardSouth => metObstacles
+                    .Any(
+                        (o) => o.Direction == GuardSouth
+                        && o.X == loc.X
+                        && o.Y >= loc.Y
+                    ),
+                GuardWest => metObstacles
+                    .Any(
+                        (o) => o.Direction == GuardWest
+                        && o.Y == loc.Y
+                        && o.X <= loc.X
+                    ),
+                GuardEast => metObstacles
+                    .Any(
+                        (o) => o.Direction == GuardEast
+                        && o.Y == loc.Y
+                        && o.X >= loc.X
+                    ),
+                _ => throw new InvalidOperationException("Invalid guard char")
+            };
+
+        private static bool AdvanceGuard(string[] map, ref Point loc,
+            List<GuardPointDir> metObstacles, List<Point> possRetconSpots)
         {
             char guard = map[loc.Y][loc.X];
 
@@ -74,10 +144,16 @@ namespace AoC2024Unified.Solutions
             }
             else if (HasObstacle(map, newLoc))
             {
+                metObstacles.Add(new GuardPointDir(loc, guard));
                 TurnGuard(map, loc);
             }
             else
             {
+                if (WouldMeetMetObstacleIfTurned(metObstacles, guard, loc))
+                {
+                    possRetconSpots.Add(newLoc);
+                }
+
                 Common.UpdateMatrix(map, loc, GuardVisited);
                 Common.UpdateMatrix(map, newLoc, guard);
                 loc = newLoc;
@@ -95,11 +171,18 @@ namespace AoC2024Unified.Solutions
 
             Point guardLoc = LocateGuard(map);
 
-            while (!AdvanceGuard(map, ref guardLoc)) { }
+            var metObstacles = new List<GuardPointDir>();
+            var possRetconSpots = new List<Point>();
 
-            int total = CountVisited(map);
+            while (!AdvanceGuard(
+                map, ref guardLoc, metObstacles, possRetconSpots))
+            { }
 
-            Console.WriteLine($"The guard has visited {total} spots");
+            int totalVisited = CountVisited(map);
+
+            Console.WriteLine($"The guard has visited {totalVisited} spots");
+            Console.WriteLine(
+                $"Possible retcon spots: {possRetconSpots.Count}");
         }
     }
 }
