@@ -149,15 +149,19 @@ namespace AoC2024Unified.Solutions
         private static int CountVisited(string[] map)
             => map.Sum((r) => r.Count((c) => c == GuardVisited));
 
-        private IEnumerable<string[]> AddOneObstacle(string[] map)
+        private static IEnumerable<string[]> AddOneObstacle(
+            string[] mapOrig, string[] mapEnd)
         {
-            for (int row = 0; row < map.Length; ++row)
+            for (int row = 0; row < mapOrig.Length; ++row)
             {
-                for (int col = 0; col < map[row].Length; ++col)
+                for (int col = 0; col < mapOrig[row].Length; ++col)
                 {
-                    if (map[row][col] == Empty)
+                    if (
+                        (mapEnd[row][col] == GuardVisited)
+                        && (mapOrig[row][col] == Empty)
+                    )
                     {
-                        string[] newMap = (string[])map.Clone();
+                        string[] newMap = (string[])mapOrig.Clone();
                         Common.UpdateMatrix(
                             newMap, new Point(col, row), Obstacle);
                         yield return newMap;
@@ -195,7 +199,7 @@ namespace AoC2024Unified.Solutions
             TimeSpan bTime;
             DateTime start = DateTime.Now;
 
-            foreach (string[] testMap in AddOneObstacle(mapOrig))
+            foreach (string[] testMap in AddOneObstacle(mapOrig, map))
             {
                 AdvancementResult retconResult;
                 Point testGuardLoc = guardLogOrig;
@@ -220,7 +224,7 @@ namespace AoC2024Unified.Solutions
             Console.WriteLine($"The guard has visited {totalVisited} spots");
             Console.WriteLine(
                 $"Possible retcon spots: {retconSpots.Count}."
-                + $"(Took {bTime.TotalSeconds} seconds)");
+                + $" (Took {bTime.TotalSeconds} seconds)");
         }
     }
 }
