@@ -1,3 +1,4 @@
+using System.Drawing;
 using AoC2024Unified.Types;
 
 namespace AoC2024Unified.Solutions
@@ -46,6 +47,15 @@ namespace AoC2024Unified.Solutions
                 StringSplitOptions.RemoveEmptyEntries);
 
             return rows;
+        }
+
+        public static void UpdateMatrix(
+            string[] matrix, Point loc, char newChar)
+        {
+            string row = matrix[loc.Y];
+            string newRow = row.Remove(loc.X, 1)
+                .Insert(loc.X, newChar.ToString());
+            matrix[loc.Y] = newRow;
         }
     }
 }
