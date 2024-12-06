@@ -91,90 +91,8 @@ namespace AoC2024Unified.Solutions
             => loc.X < 0 || loc.X >= map[0].Length
                 || loc.Y < 0 || loc.Y >= map.Length;
 
-        private static int ObstaclesInLine(string[] map, int rowCol,
-            int min, int max, bool isVert)
-        {
-            if (max - min <= 0)
-            {
-                return 0;
-            }
-
-            if (min < 0)
-            {
-                return 0;
-            }
-
-            if (isVert && max >= map.Length)
-            {
-                return 0;
-            }
-
-            if (!isVert && max >= map[0].Length)
-            {
-                return 0;
-            }
-
-            if (!isVert)
-            {
-                return map[rowCol][min..max].Count((c) => c == Obstacle);
-            }
-            else
-            {
-                int total = 0;
-
-                for (int i = min; i <= max; ++i)
-                {
-                    if (map[i][rowCol] == Obstacle)
-                    {
-                        ++total;
-                    }
-                }
-
-                return total;
-            }
-        }
-
-        private static bool WouldMeetMetObstacleIfTurned(string[] map,
-            List<GuardPointDir> metObstacles, char guardDir, Point loc)
-            => GetNextGuardDirection(guardDir) switch
-            {
-                GuardNorth => metObstacles
-                    .Any(
-                        (o) => o.Direction == GuardNorth
-                        && o.X == loc.X
-                        && o.Y <= loc.Y
-                        && ObstaclesInLine(
-                            map, loc.X, o.Y + 1, loc.Y - 1, true) == 0
-                    ),
-                GuardSouth => metObstacles
-                    .Any(
-                        (o) => o.Direction == GuardSouth
-                        && o.X == loc.X
-                        && o.Y >= loc.Y
-                        && ObstaclesInLine(
-                            map, loc.X, loc.Y + 1, o.Y - 1, true) == 0
-                    ),
-                GuardWest => metObstacles
-                    .Any(
-                        (o) => o.Direction == GuardWest
-                        && o.Y == loc.Y
-                        && o.X <= loc.X
-                        && ObstaclesInLine(
-                            map, loc.Y, o.X + 1, loc.X - 1, false) == 0
-                    ),
-                GuardEast => metObstacles
-                    .Any(
-                        (o) => o.Direction == GuardEast
-                        && o.Y == loc.Y
-                        && o.X >= loc.X
-                        && ObstaclesInLine(
-                            map, loc.Y, loc.X + 1, o.X - 1, false) == 0
-                    ),
-                _ => throw new InvalidOperationException("Invalid guard char")
-            };
-
         private static bool AdvanceGuard(string[] map, ref Point loc,
-            List<GuardPointDir> metObstacles, List<Point> possRetconSpots)
+            List<GuardPointDir> metObstacles)
         {
             char guard = map[loc.Y][loc.X];
 
@@ -200,11 +118,6 @@ namespace AoC2024Unified.Solutions
             }
             else
             {
-                if (WouldMeetMetObstacleIfTurned(map, metObstacles, guard, loc))
-                {
-                    possRetconSpots.Add(newLoc);
-                }
-
                 Common.UpdateMatrix(map, loc, GuardVisited);
                 Common.UpdateMatrix(map, newLoc, guard);
                 loc = newLoc;
@@ -225,9 +138,7 @@ namespace AoC2024Unified.Solutions
             var metObstacles = new List<GuardPointDir>();
             var possRetconSpots = new List<Point>();
 
-            while (!AdvanceGuard(
-                map, ref guardLoc, metObstacles, possRetconSpots))
-            { }
+            while (!AdvanceGuard(map, ref guardLoc, metObstacles)) { }
 
             int totalVisited = CountVisited(map);
 
