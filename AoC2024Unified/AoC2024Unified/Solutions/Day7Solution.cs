@@ -34,7 +34,7 @@ namespace AoC2024Unified.Solutions
         }
 
         private static IEnumerable<UInt128> GetRestOfLine(List<UInt128> numbers,
-            int start = 0)
+            bool useConcat, int start = 0)
         {
             UInt128 thisNum = numbers[^(start + 1)];
 
@@ -44,24 +44,32 @@ namespace AoC2024Unified.Solutions
             }
             else
             {
-                foreach (UInt128 restNum in GetRestOfLine(numbers, start + 1))
+                foreach (UInt128 restNum in GetRestOfLine(
+                    numbers, useConcat, start + 1))
                 {
                     yield return thisNum + restNum;
                     yield return thisNum * restNum;
+
+                    if (useConcat)
+                    {
+                        string combo = $"{restNum}{thisNum}";
+                        UInt128 comboNum = UInt128.Parse(combo);
+
+                        yield return comboNum;
+                    }
                 }
             }
         }
 
-        public async Task Solve(bool isReal)
+        private static UInt128 CalculateTotal(
+            List<CalcRow> calcRows, bool useConcat)
         {
-            string input = await Common.ReadFile(isReal, DayNum);
-            List<CalcRow> calcRows = ParseFile(input);
-
             UInt128 total = 0;
 
             foreach (CalcRow row in calcRows)
             {
-                foreach (UInt128 possCalc in GetRestOfLine(row.Numbers))
+                foreach (UInt128 possCalc in GetRestOfLine(
+                    row.Numbers, useConcat))
                 {
                     if (possCalc == row.Result)
                     {
@@ -71,7 +79,20 @@ namespace AoC2024Unified.Solutions
                 }
             }
 
+            return total;
+        }
+
+        public async Task Solve(bool isReal)
+        {
+            string input = await Common.ReadFile(isReal, DayNum);
+            List<CalcRow> calcRows = ParseFile(input);
+
+            UInt128 total = CalculateTotal(calcRows, false);
+            UInt128 concatTotal = CalculateTotal(calcRows, true);
+
             Console.WriteLine($"The total is {total}.");
+            Console.WriteLine(
+                $"The total with concatenation is {concatTotal}.");
         }
     }
 }
