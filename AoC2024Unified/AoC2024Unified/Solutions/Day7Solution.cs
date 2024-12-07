@@ -34,9 +34,8 @@ namespace AoC2024Unified.Solutions
         }
 
         private static IEnumerable<UInt128> GetPossLineResults(
-            List<UInt128> numbers, bool useConcat, int startAt = 0)
+            List<UInt128> numbers, bool useConcat, int reverseIndex = 1)
         {
-            int reverseIndex = startAt + 1;
             UInt128 thisNum = numbers[^reverseIndex];
 
             if (reverseIndex == numbers.Count)
@@ -46,7 +45,7 @@ namespace AoC2024Unified.Solutions
             else
             {
                 foreach (UInt128 restNum in GetPossLineResults(
-                    numbers, useConcat, startAt + 1))
+                    numbers, useConcat, reverseIndex + 1))
                 {
                     yield return thisNum + restNum;
                     yield return thisNum * restNum;
