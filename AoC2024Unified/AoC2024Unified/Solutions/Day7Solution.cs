@@ -33,19 +33,20 @@ namespace AoC2024Unified.Solutions
             return calcRows;
         }
 
-        private static IEnumerable<UInt128> GetRestOfLine(List<UInt128> numbers,
-            bool useConcat, int start = 0)
+        private static IEnumerable<UInt128> GetPossLineResults(
+            List<UInt128> numbers, bool useConcat, int startAt = 0)
         {
-            UInt128 thisNum = numbers[^(start + 1)];
+            int reverseIndex = startAt + 1;
+            UInt128 thisNum = numbers[^reverseIndex];
 
-            if (start == numbers.Count - 1)
+            if (reverseIndex == numbers.Count)
             {
                 yield return thisNum;
             }
             else
             {
-                foreach (UInt128 restNum in GetRestOfLine(
-                    numbers, useConcat, start + 1))
+                foreach (UInt128 restNum in GetPossLineResults(
+                    numbers, useConcat, startAt + 1))
                 {
                     yield return thisNum + restNum;
                     yield return thisNum * restNum;
@@ -68,7 +69,7 @@ namespace AoC2024Unified.Solutions
 
             foreach (CalcRow row in calcRows)
             {
-                foreach (UInt128 possCalc in GetRestOfLine(
+                foreach (UInt128 possCalc in GetPossLineResults(
                     row.Numbers, useConcat))
                 {
                     if (possCalc == row.Result)
