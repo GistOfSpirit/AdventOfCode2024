@@ -7,9 +7,9 @@ namespace AoC2024Unified.Solutions
 
         private class CalcRow
         {
-            public required UInt128 Result { init; get; }
+            public required ulong Result { init; get; }
 
-            public required List<UInt128> Numbers { init; get; }
+            public required List<ulong> Numbers { init; get; }
         }
 
         private static List<CalcRow> ParseFile(string input)
@@ -25,18 +25,18 @@ namespace AoC2024Unified.Solutions
 
                 calcRows.Add(new CalcRow
                 {
-                    Result = UInt128.Parse(numbers[0][..^1]),
-                    Numbers = [.. numbers[1..].Select(UInt128.Parse)]
+                    Result = ulong.Parse(numbers[0][..^1]),
+                    Numbers = [.. numbers[1..].Select(ulong.Parse)]
                 });
             }
 
             return calcRows;
         }
 
-        private static IEnumerable<UInt128> GetPossLineResults(
-            List<UInt128> numbers, bool useConcat, int reverseIndex = 1)
+        private static IEnumerable<ulong> GetPossLineResults(
+            List<ulong> numbers, bool useConcat, int reverseIndex = 1)
         {
-            UInt128 thisNum = numbers[^reverseIndex];
+            ulong thisNum = numbers[^reverseIndex];
 
             if (reverseIndex == numbers.Count)
             {
@@ -44,7 +44,7 @@ namespace AoC2024Unified.Solutions
             }
             else
             {
-                foreach (UInt128 restNum in GetPossLineResults(
+                foreach (ulong restNum in GetPossLineResults(
                     numbers, useConcat, reverseIndex + 1))
                 {
                     yield return thisNum + restNum;
@@ -53,7 +53,7 @@ namespace AoC2024Unified.Solutions
                     if (useConcat)
                     {
                         string combo = $"{restNum}{thisNum}";
-                        UInt128 comboNum = UInt128.Parse(combo);
+                        ulong comboNum = ulong.Parse(combo);
 
                         yield return comboNum;
                     }
@@ -61,14 +61,14 @@ namespace AoC2024Unified.Solutions
             }
         }
 
-        private static UInt128 CalculateTotal(
+        private static ulong CalculateTotal(
             List<CalcRow> calcRows, bool useConcat)
         {
-            UInt128 total = 0;
+            ulong total = 0;
 
             foreach (CalcRow row in calcRows)
             {
-                foreach (UInt128 possCalc in GetPossLineResults(
+                foreach (ulong possCalc in GetPossLineResults(
                     row.Numbers, useConcat))
                 {
                     if (possCalc == row.Result)
@@ -87,8 +87,8 @@ namespace AoC2024Unified.Solutions
             string input = await Common.ReadFile(isReal, DayNum);
             List<CalcRow> calcRows = ParseFile(input);
 
-            UInt128 total = CalculateTotal(calcRows, false);
-            UInt128 concatTotal = CalculateTotal(calcRows, true);
+            ulong total = CalculateTotal(calcRows, false);
+            ulong concatTotal = CalculateTotal(calcRows, true);
 
             Console.WriteLine($"The total is {total}.");
             Console.WriteLine(
