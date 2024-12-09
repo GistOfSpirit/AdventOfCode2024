@@ -4,11 +4,11 @@ namespace AoC2024Unified.Solutions
     {
         private class FileBlock
         {
-            public ulong FileId { get; set; }
+            public int FileId { get; set; }
 
-            public ulong Size { get; set; }
+            public int Size { get; set; }
 
-            public ulong SpaceAfter { get; set; }
+            public int SpaceAfter { get; set; }
 
             public override string ToString()
                 => $"{FileId} ({Size}) ({SpaceAfter})";
@@ -24,13 +24,13 @@ namespace AoC2024Unified.Solutions
             {
                 var block = new FileBlock
                 {
-                    FileId = (ulong)(i / 2),
-                    Size = ulong.Parse(input[i].ToString())
+                    FileId = i / 2,
+                    Size = int.Parse(input[i].ToString())
                 };
 
                 if (i + 1 < input.Length)
                 {
-                    block.SpaceAfter = ulong.Parse(input[i + 1].ToString());
+                    block.SpaceAfter = int.Parse(input[i + 1].ToString());
                 }
 
                 list.Add(block);
@@ -51,7 +51,7 @@ namespace AoC2024Unified.Solutions
 
                 FileBlock lastBlock = fileBlockList[^1];
 
-                ulong numToMove = Math.Min(
+                int numToMove = Math.Min(
                     firstWithBlank.SpaceAfter, lastBlock.Size);
 
                 FileBlock targetBlock;
@@ -106,16 +106,19 @@ namespace AoC2024Unified.Solutions
         private static ulong CalcChecksum(List<FileBlock> fileBlockList)
         {
             ulong checksum = 0;
-            ulong index = 0;
+            int index = 0;
 
-            foreach (FileBlock block in fileBlockList)
+            checked
             {
-                for (ulong i = 0; i < block.Size; ++i)
+                foreach (FileBlock block in fileBlockList)
                 {
-                    checksum += block.FileId * (i + index);
-                }
+                    for (int i = 0; i < block.Size; ++i)
+                    {
+                        checksum += (ulong)block.FileId * (ulong)(i + index);
+                    }
 
-                index += block.Size;
+                    index += block.Size;
+                }
             }
 
             return checksum;
