@@ -103,6 +103,70 @@ namespace AoC2024Unified.Solutions
             } while (!IsGathered(fileBlockList));
         }
 
+        private static bool AttemptToMoveBlock(
+            List<FileBlock> fileBlockList,
+            int blockToMoveIndex)
+        {
+            FileBlock blockToMove = fileBlockList[blockToMoveIndex];
+
+            foreach (FileBlock block in fileBlockList[..blockToMoveIndex])
+            {
+                if (block.SpaceAfter >= blockToMove.Size)
+                {
+                    fileBlockList[blockToMoveIndex - 1]
+                        .SpaceAfter += blockToMove.Size
+                            + blockToMove.SpaceAfter;
+
+                    blockToMove.SpaceAfter =
+                        block.SpaceAfter - blockToMove.Size;
+                    block.SpaceAfter = 0;
+
+                    fileBlockList.Remove(blockToMove);
+                    fileBlockList.Insert(fileBlockList.IndexOf(block) + 1,
+                        blockToMove);
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static void DefragDisk(List<FileBlock> fileBlockList)
+        {
+            int maxFileId = fileBlockList.Max((b) => b.FileId);
+
+            for (int i = maxFileId; i >= 0; --i)
+            {
+                AttemptToMoveBlock(fileBlockList,
+                    fileBlockList.FindIndex((b) => b.FileId == i));
+            }
+
+            // Leaving code below. It checks again and again
+            // until nothing can be moved any longer.
+
+            // bool hasExaminedWholeList = false;
+
+            // do
+            // {
+            //     for (
+            //         int blockToMoveIndex = fileBlockList.Count - 1;
+            //         blockToMoveIndex >= 1;
+            //         --blockToMoveIndex)
+            //     {
+            //         if (AttemptToMoveBlock(fileBlockList, blockToMoveIndex))
+            //         {
+            //             break;
+            //         }
+
+            //         if (blockToMoveIndex == 1)
+            //         {
+            //             hasExaminedWholeList = true;
+            //         }
+            //     }
+            // } while (!hasExaminedWholeList);
+        }
+
         private static ulong CalcChecksum(List<FileBlock> fileBlockList)
         {
             ulong checksum = 0;
@@ -117,7 +181,7 @@ namespace AoC2024Unified.Solutions
                         checksum += (ulong)block.FileId * (ulong)(i + index);
                     }
 
-                    index += block.Size;
+                    index += block.Size + block.SpaceAfter;
                 }
             }
 
@@ -128,12 +192,19 @@ namespace AoC2024Unified.Solutions
         {
             string input = (await Common.ReadFile(isReal, DayNum)).Trim();
 
-            var fileBlockList = TranslateInput(input);
-            EnfragDisk(fileBlockList);
+            var fileBlockListToEnfrag = TranslateInput(input);
+            EnfragDisk(fileBlockListToEnfrag);
 
-            ulong checksum = CalcChecksum(fileBlockList);
+            ulong enfragChecksum = CalcChecksum(fileBlockListToEnfrag);
 
-            Console.WriteLine($"The checksum is {checksum}");
+            Console.WriteLine($"The enfragged checksum is {enfragChecksum}");
+
+            var fileBlockListToDefrag = TranslateInput(input);
+            DefragDisk(fileBlockListToDefrag);
+
+            ulong defragChecksum = CalcChecksum(fileBlockListToDefrag);
+
+            Console.WriteLine($"The defragged checksum is {defragChecksum}");
         }
     }
 }
