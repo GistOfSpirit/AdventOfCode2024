@@ -12,7 +12,7 @@ var daySolutions = new Type[]{
     typeof(Day9Solution),
 };
 
-int dayNum = 8;
+int dayNum = 9;
 bool isReal = false;
 
 var daySolution = (IDaySolution)Activator.CreateInstance(
