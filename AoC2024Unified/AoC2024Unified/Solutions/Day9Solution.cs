@@ -39,7 +39,7 @@ namespace AoC2024Unified.Solutions
             return list;
         }
 
-        private static bool IsDefragged(List<FileBlock> fileBlockList)
+        private static bool IsGathered(List<FileBlock> fileBlockList)
             => fileBlockList[..^1].All((b) => b.SpaceAfter == 0);
 
         private static void EnfragDisk(List<FileBlock> fileBlockList)
@@ -100,7 +100,7 @@ namespace AoC2024Unified.Solutions
                     fileBlockList.Remove(lastBlock);
                     fileBlockList[^1].SpaceAfter += lastBlock.SpaceAfter;
                 }
-            } while (!IsDefragged(fileBlockList));
+            } while (!IsGathered(fileBlockList));
         }
 
         private static ulong CalcChecksum(List<FileBlock> fileBlockList)
