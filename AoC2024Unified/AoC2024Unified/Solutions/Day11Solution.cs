@@ -9,6 +9,18 @@ namespace AoC2024Unified.Solutions
         private const int Factor = 2024;
         private const int ThreadLoad = 100;
 
+        private class SequenceSearchResult
+        {
+            public required List<ulong> Sequence { get; set; }
+
+            public required int Index { get; set; }
+
+            public int Remaining
+            {
+                get => Sequence.Count - Index - 1;
+            }
+        }
+
         private static ulong[] SplitStone(ulong stone, ulong digits)
         {
             ulong divisor = (ulong)Math.Pow(10, digits);
@@ -18,76 +30,113 @@ namespace AoC2024Unified.Solutions
             return [lStone, rStone];
         }
 
-        private static IEnumerable<List<ulong>> SplitList(List<ulong> stones)
+        private static SequenceSearchResult? FindInSequence(
+            List<List<ulong>> sequences, ulong num
+        )
         {
-            int start = 0;
-
-            while (start < stones.Count)
+            foreach (List<ulong> sequence in sequences)
             {
-                List<ulong> subStones = stones
-                    .Skip(start).Take(ThreadLoad).ToList();
+                for (int i = 0; i < sequence.Count - 1; ++i)
+                {
+                    if (sequence[i] == num)
+                    {
+                        return new SequenceSearchResult
+                        {
+                            Sequence = sequence,
+                            Index = i
+                        };
+                    }
+                }
+            }
 
-                yield return subStones;
-                start += ThreadLoad;
+            return null;
+        }
+
+        private static void AddToSequences(
+            List<List<ulong>> sequences, ulong prev, ulong next)
+        {
+            List<ulong>? endsWithPrev
+                = sequences.FirstOrDefault((s) => s[^1] == prev);
+            List<ulong>? startsWithNext
+                = sequences.FirstOrDefault((s) => s[0] == next);
+
+            if (endsWithPrev != null)
+            {
+                if (startsWithNext != null)
+                {
+                    endsWithPrev.AddRange(startsWithNext);
+                    sequences.Remove(startsWithNext);
+                }
+                else
+                {
+                    endsWithPrev.Add(next);
+                }
+            }
+            else
+            {
+                sequences.Add([prev, next]);
             }
         }
 
-        private static async Task<List<ulong>> Blink(List<ulong> stones)
+        private static List<ulong> ResultOf(
+            ulong num, int loops, List<List<ulong>> sequences)
         {
-            if (stones.Count > ThreadLoad)
+            if (loops == 0)
             {
-                var taskList = new List<Task<List<ulong>>>();
+                return [num];
+            }
 
-                foreach (List<ulong> partList in SplitList(stones))
+            int remainingLoops = loops;
+            SequenceSearchResult? prior = FindInSequence(sequences, num);
+
+            while (prior != null)
+            {
+                int steps = Math.Min(remainingLoops, prior.Remaining);
+
+                remainingLoops -= steps;
+                ulong farthest = prior.Sequence[prior.Index + steps];
+
+                if (remainingLoops == 0)
                 {
-                    taskList.Add(Blink(partList));
+                    return [farthest];
                 }
 
-                var newList = new List<ulong>();
+                num = farthest;
 
-                for (int i = 0; i < taskList.Count; ++i)
-                {
-                    newList.AddRange(await taskList[i]);
-                }
-
-                return newList;
+                prior = FindInSequence(sequences, num);
             }
 
             checked
             {
-                int index = 0;
-                var newList = new List<ulong>(stones);
+                --remainingLoops;
 
-                do
+                if (num == 0)
                 {
-                    ulong stone = newList[index];
+                    AddToSequences(sequences, 0, 1);
+                    return ResultOf(1, remainingLoops, sequences);
+                }
+                else
+                {
+                    ulong digits = num.GetNumberOfDigits();
 
-                    if (stone == 0)
+                    if (digits % 2 == 0)
                     {
-                        newList[index] = 1;
+                        ulong[] newNums = SplitStone(num, digits / 2);
+
+                        var result = new List<ulong>();
+                        result.AddRange(
+                            ResultOf(newNums[0], remainingLoops, sequences));
+                        result.AddRange(
+                            ResultOf(newNums[1], remainingLoops, sequences));
+                        return result;
                     }
                     else
                     {
-                        ulong digits = stone.GetNumberOfDigits();
-
-                        if (digits % 2 == 0)
-                        {
-                            ulong[] newStones = SplitStone(stone, digits / 2);
-
-                            newList[index] = newStones[0];
-                            newList.Insert(++index, newStones[1]);
-                        }
-                        else
-                        {
-                            ulong newStoneNum = stone * Factor;
-                            newList[index] = newStoneNum;
-                        }
+                        ulong newNum = num * Factor;
+                        AddToSequences(sequences, num, newNum);
+                        return ResultOf(newNum, remainingLoops, sequences);
                     }
-
-                    ++index;
-                } while (index < newList.Count);
-
-                return newList;
+                }
             }
         }
 
@@ -97,21 +146,32 @@ namespace AoC2024Unified.Solutions
                 = (await Common.ReadNumberRows(isReal, DayNum))[0]
                 .Select((n) => (ulong)n).ToList();
 
-            DateTime start = DateTime.Now;
+            var sequences = new List<List<ulong>>();
+            var newList = new List<ulong>();
 
-            for (int i = 0; i < NumOfBlinks.Max(); ++i)
+            foreach (ulong num in stones)
             {
-                stones = await Blink(stones);
-
-                string notable = NumOfBlinks.Contains(i + 1) ? "***" : "";
-                Console.WriteLine(
-                    $"{notable}{i + 1} blinks, {stones.Count} stones.");
+                var result = ResultOf(num, 75, sequences);
+                newList.AddRange(result);
             }
 
-            DateTime end = DateTime.Now;
-            TimeSpan diff = end - start;
+            Console.WriteLine(newList.Count);
 
-            Console.WriteLine($"Took {diff.TotalSeconds} seconds.");
+            // DateTime start = DateTime.Now;
+
+            // for (int i = 0; i < NumOfBlinks.Max(); ++i)
+            // {
+            //     stones = await Blink(stones);
+
+            //     string notable = NumOfBlinks.Contains(i + 1) ? "***" : "";
+            //     Console.WriteLine(
+            //         $"{notable}{i + 1} blinks, {stones.Count} stones.");
+            // }
+
+            // DateTime end = DateTime.Now;
+            // TimeSpan diff = end - start;
+
+            // Console.WriteLine($"Took {diff.TotalSeconds} seconds.");
         }
     }
 }
