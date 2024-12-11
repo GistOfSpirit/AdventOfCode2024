@@ -1,3 +1,5 @@
+using AoC2024Unified.Extensions;
+
 namespace AoC2024Unified.Solutions
 {
     public class Day11Solution : IDaySolution
@@ -5,70 +7,105 @@ namespace AoC2024Unified.Solutions
         private const int DayNum = 11;
         private static readonly int[] NumOfBlinks = [25, 75];
         private const int Factor = 2024;
+        private const int ThreadLoad = 100;
 
-        private static List<string> GetStringRow(string input)
-            => [.. input.Trim()
-                .Split(' ', StringSplitOptions.RemoveEmptyEntries)];
-
-        private static string[] SplitStone(string stone)
+        private static ulong[] SplitStone(ulong stone, ulong digits)
         {
-            string lStone = stone[..(stone.Length / 2)];
-            string rStone = stone[(stone.Length / 2)..];
-            string rStoneFixed = rStone.TrimStart('0');
+            ulong divisor = (ulong)Math.Pow(10, digits);
+            ulong lStone = stone / divisor;
+            ulong rStone = stone % divisor;
 
-            return [lStone, rStoneFixed.Length > 0 ? rStoneFixed : "0"];
+            return [lStone, rStone];
         }
 
-        private static void Blink(List<string> stones)
+        private static IEnumerable<List<ulong>> SplitList(List<ulong> stones)
         {
-            int index = 0;
+            int start = 0;
 
-            do
+            while (start < stones.Count)
             {
-                string stone = stones[index];
+                List<ulong> subStones = stones
+                    .Skip(start).Take(ThreadLoad).ToList();
 
-                if (stone == "0")
+                yield return subStones;
+                start += ThreadLoad;
+            }
+        }
+
+        private static async Task<List<ulong>> Blink(List<ulong> stones)
+        {
+            if (stones.Count > ThreadLoad)
+            {
+                var taskList = new List<Task<List<ulong>>>();
+
+                foreach (List<ulong> partList in SplitList(stones))
                 {
-                    stones[index] = "1";
+                    taskList.Add(Blink(partList));
                 }
-                else if (stone.Length % 2 == 0)
-                {
-                    string[] newStones = SplitStone(stone);
 
-                    stones[index] = newStones[0];
-                    stones.Insert(index + 1, newStones[1]);
+                var newList = await taskList[0];
+
+                for (int i = 1; i < taskList.Count; ++i)
+                {
+                    newList.AddRange(await taskList[i]);
+                }
+
+                return newList;
+            }
+
+            checked
+            {
+                int index = 0;
+                var newList = new List<ulong>(stones);
+
+                do
+                {
+                    ulong stone = newList[index];
+
+                    if (stone == 0)
+                    {
+                        newList[index] = 1;
+                    }
+                    else
+                    {
+                        ulong digits = stone.GetNumberOfDigits();
+
+                        if (digits % 2 == 0)
+                        {
+                            ulong[] newStones = SplitStone(stone, digits / 2);
+
+                            newList[index] = newStones[0];
+                            newList.Insert(++index, newStones[1]);
+                        }
+                        else
+                        {
+                            ulong newStoneNum = stone * Factor;
+                            newList[index] = newStoneNum;
+                        }
+                    }
 
                     ++index;
-                }
-                else
-                {
-                    checked
-                    {
-                        ulong stoneNum = ulong.Parse(stone);
-                        ulong newStoneNum = stoneNum * Factor;
-                        stones[index] = $"{newStoneNum}";
-                    }
-                }
+                } while (index < newList.Count);
 
-                ++index;
-            } while (index < stones.Count);
+                return newList;
+            }
         }
 
         public async Task Solve(bool isReal)
         {
-            string input = await Common.ReadFile(isReal, DayNum);
-            List<string> stones = GetStringRow(input);
+            List<ulong> stones
+                = (await Common.ReadNumberRows(isReal, DayNum))[0]
+                .Select((n) => (ulong)n).ToList();
 
             DateTime start = DateTime.Now;
 
             for (int i = 0; i < NumOfBlinks.Max(); ++i)
             {
-                Blink(stones);
+                stones = await Blink(stones);
 
-                if (NumOfBlinks.Contains(i + 1))
-                {
-                    Console.WriteLine($"There are now {stones.Count} stones.");
-                }
+                string notable = NumOfBlinks.Contains(i + 1) ? "***" : "";
+                Console.WriteLine(
+                    $"{notable}{i + 1} blinks, {stones.Count} stones.");
             }
 
             DateTime end = DateTime.Now;
