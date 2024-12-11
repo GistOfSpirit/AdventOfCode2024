@@ -43,9 +43,9 @@ namespace AoC2024Unified.Solutions
                     taskList.Add(Blink(partList));
                 }
 
-                var newList = await taskList[0];
+                var newList = new List<ulong>();
 
-                for (int i = 1; i < taskList.Count; ++i)
+                for (int i = 0; i < taskList.Count; ++i)
                 {
                     newList.AddRange(await taskList[i]);
                 }
