@@ -76,7 +76,6 @@ namespace AoC2024Unified.Solutions
 
         public async Task Solve(bool isReal)
         {
-            string input = await Common.ReadFile(isReal, DayNum);
             List<ulong> stones =
                 (await Common.ReadNumberRows(isReal, DayNum))[0]
                 .Select((n) => (ulong)n)
