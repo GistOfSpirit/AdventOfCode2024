@@ -1,3 +1,5 @@
+using AoC2024Unified.Extensions;
+
 namespace AoC2024Unified.Solutions
 {
     public class Day11Solution : IDaySolution
@@ -6,69 +8,89 @@ namespace AoC2024Unified.Solutions
         private static readonly int[] NumOfBlinks = [25, 75];
         private const int Factor = 2024;
 
-        private static List<string> GetStringRow(string input)
-            => [.. input.Trim()
-                .Split(' ', StringSplitOptions.RemoveEmptyEntries)];
-
-        private static string[] SplitStone(string stone)
+        private static ulong[] SplitStone(ulong stone, int digits)
         {
-            string lStone = stone[..(stone.Length / 2)];
-            string rStone = stone[(stone.Length / 2)..];
-            string rStoneFixed = rStone.TrimStart('0');
+            ulong divisor = (ulong)Math.Pow(10, digits / 2);
+            ulong lStone = stone / divisor;
+            ulong rStone = stone % divisor;
 
-            return [lStone, rStoneFixed.Length > 0 ? rStoneFixed : "0"];
+            return [lStone, rStone];
         }
 
-        private static void Blink(List<string> stones)
+        private static List<ulong> Blink(ulong stone)
         {
-            int index = 0;
-
-            do
+            if (stone == 0)
             {
-                string stone = stones[index];
+                return [1];
+            }
+            else
+            {
+                int digits = stone.GetNumberOfDigits();
 
-                if (stone == "0")
+                if (digits % 2 == 0)
                 {
-                    stones[index] = "1";
-                }
-                else if (stone.Length % 2 == 0)
-                {
-                    string[] newStones = SplitStone(stone);
+                    ulong[] newStones = SplitStone(stone, digits);
 
-                    stones[index] = newStones[0];
-                    stones.Insert(index + 1, newStones[1]);
-
-                    ++index;
+                    return [.. newStones];
                 }
                 else
                 {
                     checked
                     {
-                        ulong stoneNum = ulong.Parse(stone);
-                        ulong newStoneNum = stoneNum * Factor;
-                        stones[index] = $"{newStoneNum}";
+                        ulong newStoneNum = stone * Factor;
+                        return [newStoneNum];
                     }
                 }
+            }
+        }
 
-                ++index;
-            } while (index < stones.Count);
+        private static ulong CalcResult(List<ulong> stones, int blinks,
+            Dictionary<(ulong stone, int blinks), ulong> priorCalcs)
+        {
+            if (blinks == 0)
+            {
+                return (ulong)stones.Count;
+            }
+
+            checked
+            {
+                ulong total = 0;
+
+                foreach (ulong stone in stones)
+                {
+                    if (priorCalcs.ContainsKey((stone, blinks)))
+                    {
+                        total += priorCalcs[(stone, blinks)];
+                        continue;
+                    }
+
+                    List<ulong> newStones = Blink(stone);
+                    ulong result = CalcResult(newStones, blinks - 1, priorCalcs);
+                    priorCalcs.Add((stone, blinks), result);
+                    total += result;
+                }
+
+                return total;
+            }
         }
 
         public async Task Solve(bool isReal)
         {
             string input = await Common.ReadFile(isReal, DayNum);
-            List<string> stones = GetStringRow(input);
+            List<ulong> stones =
+                (await Common.ReadNumberRows(isReal, DayNum))[0]
+                .Select((n) => (ulong)n)
+                .ToList();
+
+            var priorCalcs = new Dictionary<(ulong stone, int blinks), ulong>();
 
             DateTime start = DateTime.Now;
 
-            for (int i = 0; i < NumOfBlinks.Max(); ++i)
+            foreach (int blinks in NumOfBlinks)
             {
-                Blink(stones);
+                ulong result = CalcResult(stones, blinks, priorCalcs);
 
-                if (NumOfBlinks.Contains(i + 1))
-                {
-                    Console.WriteLine($"There are now {stones.Count} stones.");
-                }
+                Console.WriteLine($"{blinks} blinks: {result}");
             }
 
             DateTime end = DateTime.Now;
