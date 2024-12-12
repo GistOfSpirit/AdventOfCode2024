@@ -56,5 +56,9 @@ namespace AoC2024Unified.Types
         public static List<Direction> GetCardinal()
             => [Direction.North, Direction.East,
                 Direction.South, Direction.West];
+
+        public static List<Direction> GetSoutheastHalf()
+            => [Direction.Northeast, Direction.East,
+                Direction.South, Direction.Southeast];
     }
 }

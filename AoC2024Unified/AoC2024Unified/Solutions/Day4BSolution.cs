@@ -5,12 +5,6 @@ namespace AoC2024Unified.Solutions
         const int DayNum = 4;
         const string Pattern = "MAS";
 
-        enum Direction
-        {
-            Southwest,
-            Southeast
-        }
-
         private static bool CheckForInstanceSE(string[] matrix,
             int row, int col)
         {

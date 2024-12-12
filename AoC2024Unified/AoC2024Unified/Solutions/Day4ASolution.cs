@@ -1,3 +1,6 @@
+using System.Drawing;
+using AoC2024Unified.Types;
+
 namespace AoC2024Unified.Solutions
 {
     public class Day4ASolution : IDaySolution
@@ -5,19 +8,10 @@ namespace AoC2024Unified.Solutions
         const int DayNum = 4;
         const string Pattern = "XMAS";
 
-        enum Direction
-        {
-            East,
-            Southeast,
-            South,
-            Northeast
-        }
-
         private static List<Direction> GetPossibleDirections(string[] matrix,
             int row, int col)
         {
-            var dirList = new List<Direction>(
-                Enum.GetValues(typeof(Direction)).Cast<Direction>());
+            List<Direction> dirList = Directions.GetSoutheastHalf();
 
             // Too far north
             if (row < Pattern.Length - 1)
@@ -46,27 +40,9 @@ namespace AoC2024Unified.Solutions
         private static void AdvancePosition(Direction direction,
             ref int row, ref int col)
         {
-            if (
-                (direction == Direction.East)
-                || (direction == Direction.Northeast)
-                || (direction == Direction.Southeast)
-            )
-            {
-                ++col;
-            }
-
-            if (
-                (direction == Direction.South)
-                || (direction == Direction.Southeast)
-            )
-            {
-                ++row;
-            }
-
-            if (direction == Direction.Northeast)
-            {
-                --row;
-            }
+            Point nextPoint = direction.GetNextPoint(new Point(col, row));
+            row = nextPoint.Y;
+            col = nextPoint.X;
         }
 
         private static bool CheckForInstanceForwards(string[] matrix,
