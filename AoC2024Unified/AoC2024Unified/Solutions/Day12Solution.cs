@@ -59,18 +59,8 @@ namespace AoC2024Unified.Solutions
 
                             var perpPoints = dir.GetPerpendicularPoints(l);
 
-                            bool found = false;
-
-                            foreach (Point pp in perpPoints)
-                            {
-                                if (foundFences.Contains((dir, pp)))
-                                {
-                                    found = true;
-                                    break;
-                                }
-                            }
-
-                            if (!found)
+                            if (!perpPoints.Any((pp)
+                                => foundFences.Contains((dir, pp))))
                             {
                                 ++total;
                             }
