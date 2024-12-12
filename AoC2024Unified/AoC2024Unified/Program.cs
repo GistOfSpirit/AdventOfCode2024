@@ -16,7 +16,7 @@ var daySolutions = new Type[]{
 };
 
 int dayNum = 12;
-bool isReal = false;
+bool isReal = true;
 
 var daySolution = (IDaySolution)Activator.CreateInstance(
     daySolutions[dayNum - 1])!;

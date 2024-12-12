@@ -1,5 +1,7 @@
 
 using System.Drawing;
+using AoC2024Unified.Types;
+using AoC2024Unified.Extensions;
 
 namespace AoC2024Unified.Solutions
 {
@@ -20,25 +22,58 @@ namespace AoC2024Unified.Solutions
             public override string ToString()
                 => $"{Fruit} ({Area})";
 
-            private static List<Point> GetAdjacent(Point p)
-                => [
-                    new(p.X + 1, p.Y),
-                    new(p.X - 1, p.Y),
-                    new(p.X, p.Y + 1),
-                    new(p.X, p.Y - 1)
-                ];
-
             public int CalcPerimeter()
             {
                 int total = 0;
 
                 foreach (Point l in Locations)
                 {
-                    foreach (Point adj in GetAdjacent(l))
+                    foreach (Point adj in
+                        Directions.GetCardinal()
+                            .Select((d) => d.GetNextPoint(l)))
                     {
                         if (!Locations.Contains(adj))
                         {
                             ++total;
+                        }
+                    }
+                }
+
+                return total;
+            }
+
+            public int CalcSides()
+            {
+                int total = 0;
+                var foundFences = new List<(Direction dir, Point p)>();
+
+                foreach (Point l in Locations)
+                {
+                    foreach (Direction dir in Directions.GetCardinal())
+                    {
+                        Point adjacentInDir = dir.GetNextPoint(l);
+
+                        if (!Locations.Contains(adjacentInDir))
+                        {
+                            foundFences.Add((dir, l));
+
+                            var perpPoints = dir.GetPerpendicularPoints(l);
+
+                            bool found = false;
+
+                            foreach (Point pp in perpPoints)
+                            {
+                                if (foundFences.Contains((dir, pp)))
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found)
+                            {
+                                ++total;
+                            }
                         }
                     }
                 }
@@ -93,29 +128,39 @@ namespace AoC2024Unified.Solutions
             return plots;
         }
 
-        private static void ShowFencePrice(string[] gardenMap)
+        private static string MakeUpGardenName(string[] gardenMap)
+            => string.Join("",
+                gardenMap.SelectMany((r) => r.ToCharArray()).Distinct());
+
+        private static void ShowFencePrice(string[] gardenMap,
+            Func<string[], string> GetName)
         {
             var plots = DeterminePlots(gardenMap);
 
             int price = 0;
+            int discountPrice = 0;
 
             foreach (GardenPlot p in plots)
             {
                 int perim = p.CalcPerimeter();
                 price += perim * p.Area;
+
+                int sides = p.CalcSides();
+                discountPrice += sides * p.Area;
             }
 
-            Console.WriteLine($"The price is {price}");
+            Console.WriteLine($"{GetName(gardenMap)}: {price}"
+                + $" or {discountPrice}");
         }
 
         private static async Task SolveTests()
         {
-            foreach (string sub in new string[] { "a", "b", "c" })
+            foreach (string sub in new string[] { "a", "b", "c", "d", "e" })
             {
                 string[] gardenMap = await Common.ReadFileAsMatrix(
                     false, DayNum, sub);
 
-                ShowFencePrice(gardenMap);
+                ShowFencePrice(gardenMap, MakeUpGardenName);
             }
         }
 
@@ -130,7 +175,7 @@ namespace AoC2024Unified.Solutions
                 string[] gardenMap = await Common.ReadFileAsMatrix(
                     true, DayNum);
 
-                ShowFencePrice(gardenMap);
+                ShowFencePrice(gardenMap, (_) => "Real");
             }
         }
     }
