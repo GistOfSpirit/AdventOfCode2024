@@ -10,6 +10,7 @@ namespace AoC2024Unified.Solutions
         private const int DayNum = 13;
         private const int CostA = 3;
         private const int CostB = 1;
+        private const long ErrorOffset = 10000000000000;
 
         private class Machine
         {
@@ -56,25 +57,32 @@ namespace AoC2024Unified.Solutions
             return list;
         }
 
-        private static int CalcCost(int timesA, int timesB)
-            => (timesA * CostA) + (timesB * CostB);
-
-        private static int CalcTimes(Machine mach)
+        private static long CalcCost(Machine mach, long offset = 0)
         {
+            long prizeX = mach.PrizeLocation.Width + offset;
+            long prizeY = mach.PrizeLocation.Height + offset;
+
             int div = mach.MoveA.Width * mach.MoveB.Height
-                    - mach.MoveA.Height * mach.MoveB.Width;
-            int timesA = (
-                    mach.PrizeLocation.Width * mach.MoveB.Height
-                    - mach.PrizeLocation.Height * mach.MoveB.Width
+                - mach.MoveA.Height * mach.MoveB.Width;
+            long timesA = (
+                    prizeX * mach.MoveB.Height
+                    - prizeY * mach.MoveB.Width
                 ) / div;
-            int timesB = (
-                    mach.PrizeLocation.Height * mach.MoveA.Width
-                    - mach.PrizeLocation.Width * mach.MoveA.Height
+            long timesB = (
+                    prizeY * mach.MoveA.Width
+                    - prizeX * mach.MoveA.Height
                 ) / div;
 
-            if (mach.MoveA * timesA + mach.MoveB * timesB == mach.PrizeLocation)
+            if (
+                (mach.MoveA.Width * timesA
+                    + mach.MoveB.Width * timesB
+                    == prizeX)
+                && (mach.MoveA.Height * timesA
+                    + mach.MoveB.Height * timesB
+                    == prizeY)
+            )
             {
-                return CalcCost(timesA, timesB);
+                return (timesA * CostA) + (timesB * CostB);
             }
 
             return 0;
@@ -85,16 +93,20 @@ namespace AoC2024Unified.Solutions
             string input = await Common.ReadFile(isReal, DayNum);
             var machines = ParseInput(input);
 
-            int total = 0;
+            long totalA = 0;
+            long totalB = 0;
 
             foreach (Machine mach in machines)
             {
-                int cheapest = CalcTimes(mach);
+                long cheapestA = CalcCost(mach);
+                long cheapestB = CalcCost(mach, ErrorOffset);
 
-                total += cheapest;
+                totalA += cheapestA;
+                totalB += cheapestB;
             }
 
-            Console.WriteLine($"Spend {total} tokens");
+            Console.WriteLine($"A: Spend {totalA} tokens");
+            Console.WriteLine($"B: Spend {totalB} tokens");
         }
     }
 }
