@@ -4,6 +4,8 @@ namespace AoC2024Unified.Solutions
 {
     public class Day11Solution : IDaySolution
     {
+        // Cheated in this one
+
         private const int DayNum = 11;
         private static readonly int[] NumOfBlinks = [25, 75];
         private const int Factor = 2024;

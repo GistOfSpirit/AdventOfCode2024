@@ -5,6 +5,8 @@ namespace AoC2024Unified.Solutions
 {
     public class Day13Solution : IDaySolution
     {
+        // Cheated in this one
+
         private const int DayNum = 13;
         private const int CostA = 3;
         private const int CostB = 1;
