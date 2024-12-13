@@ -115,6 +115,19 @@ namespace AoC2024Unified.Solutions
                 }
             }
 
+            foreach (GardenPlot plot in plots)
+            {
+                plot.Locations.Sort((p1, p2) =>
+                {
+                    if (p1.X == p2.X)
+                    {
+                        return p1.Y.CompareTo(p2.Y);
+                    }
+
+                    return p1.X.CompareTo(p2.X);
+                });
+            }
+
             return plots;
         }
 
