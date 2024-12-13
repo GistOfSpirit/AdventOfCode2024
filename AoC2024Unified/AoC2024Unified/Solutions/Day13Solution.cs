@@ -17,12 +17,6 @@ namespace AoC2024Unified.Solutions
             public Point PrizeLocation { get; set; }
         }
 
-        private struct PressOption
-        {
-            public int ATimes { get; set; }
-            public int BTimes { get; set; }
-        }
-
         private static (int x, int y) ParseMatch(Match match)
             => (int.Parse(match.Groups["X"].Value),
                 int.Parse(match.Groups["Y"].Value));
@@ -61,75 +55,33 @@ namespace AoC2024Unified.Solutions
             return list;
         }
 
-        private static IEnumerable<(int times, int rem)> CalcMultiples(
-            int factor, int target)
+        private static int CalcCost(int timesA, int timesB)
+            => (timesA * ACost) + (timesB * BCost);
+
+        private static int CalcTimes(Machine mach)
         {
-            for (int i = 1; i <= MaxPresses; ++i)
+            int div = mach.MoveA.Width * mach.MoveB.Height
+                    - mach.MoveA.Height * mach.MoveB.Width;
+            int timesA = (
+                    mach.PrizeLocation.X * mach.MoveB.Height
+                    - mach.PrizeLocation.Y * mach.MoveB.Width
+                ) / div;
+            int timesB = (
+                    mach.PrizeLocation.Y * mach.MoveA.Width
+                    - mach.PrizeLocation.X * mach.MoveA.Height
+                ) / div;
+
+            if (
+                (timesA * mach.MoveA.Width + timesB * mach.MoveB.Width
+                    == mach.PrizeLocation.X)
+                && (timesA * mach.MoveA.Height + timesB * mach.MoveB.Height
+                    == mach.PrizeLocation.Y)
+            )
             {
-                int multiple = i * factor;
-
-                if (multiple > target)
-                {
-                    yield break;
-                }
-
-                yield return (i, target - multiple);
-            }
-        }
-
-        private static List<PressOption> CalcOptions(
-            Machine mach)
-        {
-            var list = new List<PressOption>();
-
-            foreach (var (aTimes, aRem)
-                in CalcMultiples(mach.MoveA.Width, mach.PrizeLocation.X))
-            {
-                if (aRem % mach.MoveB.Width == 0)
-                {
-                    // Reached X, but have we reached Y?
-                    int bTimes = aRem / mach.MoveB.Width;
-
-                    if (
-                        (aTimes * mach.MoveA.Height)
-                        + (bTimes * mach.MoveB.Height)
-                        == mach.PrizeLocation.Y
-                    )
-                    {
-                        // This is an option
-                        list.Add(new PressOption
-                        {
-                            ATimes = aTimes,
-                            BTimes = bTimes
-                        });
-                    }
-                }
+                return CalcCost(timesA, timesB);
             }
 
-            return list;
-        }
-
-        private static int CalcCost(PressOption option)
-            => (option.ATimes * ACost) + (option.BTimes * BCost);
-
-        private static int CalcCheapestOption(Machine mach)
-        {
-            var options = CalcOptions(mach);
-
-            if (options.Count == 0)
-            {
-                // Impossible
-                return -1;
-            }
-
-            int cheapest = CalcCost(options[0]);
-
-            foreach (var option in options[1..])
-            {
-                cheapest = Math.Min(cheapest, CalcCost(option));
-            }
-
-            return cheapest;
+            return 0;
         }
 
         public async Task Solve(bool isReal)
@@ -141,12 +93,9 @@ namespace AoC2024Unified.Solutions
 
             foreach (Machine mach in machines)
             {
-                int cheapest = CalcCheapestOption(mach);
+                int cheapest = CalcTimes(mach);
 
-                if (cheapest >= 0)
-                {
-                    total += cheapest;
-                }
+                total += cheapest;
             }
 
             Console.WriteLine($"Spend {total} tokens");
