@@ -6,14 +6,14 @@ namespace AoC2024Unified.Solutions
     public class Day13Solution : IDaySolution
     {
         private const int DayNum = 13;
-        private const int ACost = 3;
-        private const int BCost = 1;
+        private const int CostA = 3;
+        private const int CostB = 1;
 
         private class Machine
         {
             public Size MoveA { get; set; }
             public Size MoveB { get; set; }
-            public Point PrizeLocation { get; set; }
+            public Size PrizeLocation { get; set; }
         }
 
         private static (int x, int y) ParseMatch(Match match)
@@ -47,7 +47,7 @@ namespace AoC2024Unified.Solutions
                 {
                     MoveA = new Size(coordsA.x, coordsA.y),
                     MoveB = new Size(coordsB.x, coordsB.y),
-                    PrizeLocation = new Point(coordsP.x, coordsP.y)
+                    PrizeLocation = new Size(coordsP.x, coordsP.y)
                 });
             }
 
@@ -55,27 +55,22 @@ namespace AoC2024Unified.Solutions
         }
 
         private static int CalcCost(int timesA, int timesB)
-            => (timesA * ACost) + (timesB * BCost);
+            => (timesA * CostA) + (timesB * CostB);
 
         private static int CalcTimes(Machine mach)
         {
             int div = mach.MoveA.Width * mach.MoveB.Height
                     - mach.MoveA.Height * mach.MoveB.Width;
             int timesA = (
-                    mach.PrizeLocation.X * mach.MoveB.Height
-                    - mach.PrizeLocation.Y * mach.MoveB.Width
+                    mach.PrizeLocation.Width * mach.MoveB.Height
+                    - mach.PrizeLocation.Height * mach.MoveB.Width
                 ) / div;
             int timesB = (
-                    mach.PrizeLocation.Y * mach.MoveA.Width
-                    - mach.PrizeLocation.X * mach.MoveA.Height
+                    mach.PrizeLocation.Height * mach.MoveA.Width
+                    - mach.PrizeLocation.Width * mach.MoveA.Height
                 ) / div;
 
-            if (
-                (timesA * mach.MoveA.Width + timesB * mach.MoveB.Width
-                    == mach.PrizeLocation.X)
-                && (timesA * mach.MoveA.Height + timesB * mach.MoveB.Height
-                    == mach.PrizeLocation.Y)
-            )
+            if (mach.MoveA * timesA + mach.MoveB * timesB == mach.PrizeLocation)
             {
                 return CalcCost(timesA, timesB);
             }
