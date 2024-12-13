@@ -6,7 +6,6 @@ namespace AoC2024Unified.Solutions
     public class Day13Solution : IDaySolution
     {
         private const int DayNum = 13;
-        private const int MaxPresses = 100;
         private const int ACost = 3;
         private const int BCost = 1;
 
