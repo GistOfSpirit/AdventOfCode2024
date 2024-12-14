@@ -23,4 +23,15 @@ bool isReal = false;
 var daySolution = (IDaySolution)Activator.CreateInstance(
     daySolutions[dayNum - 1])!;
 
-await daySolution.Solve(isReal);
+if (
+    args.Length > 0
+    && args[0] == "input"
+    && daySolution is IDaySolutionWithInput daySolutionWithInput
+)
+{
+    await daySolutionWithInput.Solve(isReal, false);
+}
+else
+{
+    await daySolution.Solve(isReal);
+}

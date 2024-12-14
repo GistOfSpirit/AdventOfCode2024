@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace AoC2024Unified.Solutions
 {
-    public class Day14Solution : IDaySolution
+    public class Day14Solution : IDaySolutionWithInput
     {
         private const int DayNum = 14;
         private const int AreaWidthTest = 11;
@@ -125,6 +125,11 @@ namespace AoC2024Unified.Solutions
 
         public async Task Solve(bool isReal)
         {
+            await Solve(isReal, true);
+        }
+
+        public async Task Solve(bool isReal, bool skipIfRequiresInput)
+        {
             string input = await Common.ReadFile(isReal, DayNum);
             List<Robot> robots = ParseInput(input);
 
@@ -143,7 +148,7 @@ namespace AoC2024Unified.Solutions
 
             Console.WriteLine($"The safety factor is {safetyFactor}");
 
-            if (isReal)
+            if (isReal && !skipIfRequiresInput)
             {
                 var newRobots = ParseInput(input);
                 var origPoints = newRobots.Select((r) => r.Position).ToList();
