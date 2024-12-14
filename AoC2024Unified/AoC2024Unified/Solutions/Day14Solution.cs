@@ -101,6 +101,144 @@ namespace AoC2024Unified.Solutions
             return counts;
         }
 
+        private static bool HasTABottomLine(List<Robot> robots, Size area)
+            => Enumerable.Range(0, area.Width)
+                .All((x) => robots
+                    .Any((r) => r.Position == new Point(x, area.Height - 1)));
+
+        private static bool HasTAMiddleOfTop(List<Robot> robots, Size area)
+            => robots.Any((r) => (r.Position.Y == 1)
+                && (r.Position.X == area.Width / 2));
+
+        private static bool HasTASides(List<Robot> robots, Size area)
+            => Enumerable.Range(2, area.Height - 1)
+                .All((y) => robots.Any(
+                        (r) => r.Position == new Point(
+                            (area.Width / 2) - y, y))
+                    && robots.Any(
+                        (r) => r.Position == new Point(
+                            (area.Width / 2) + y, y)));
+
+        private static bool IsTreeangle(List<Robot> robots, Size area)
+            => HasTABottomLine(robots, area)
+                && HasTAMiddleOfTop(robots, area)
+                && HasTASides(robots, area);
+
+        private static int FindSecondWithTreeangle(
+            List<Robot> robots, Size area)
+        {
+            DateTime startTime = DateTime.Now;
+            int seconds = 0;
+
+            do
+            {
+                if (IsTreeangle(robots, area))
+                {
+                    return seconds;
+                }
+
+                foreach (Robot robot in robots)
+                {
+                    robot.Advance(1, area);
+                }
+
+                checked
+                {
+                    ++seconds;
+                }
+            } while ((DateTime.Now - startTime).TotalSeconds < 60);
+
+            return -seconds;
+        }
+
+        private static void TestIntentionalTreeangle()
+        {
+            var area = new Size(4, 7);
+            var robots = new List<Robot>();
+
+            // Fill bottom line
+            for (int x = 0; x < area.Width; ++x)
+            {
+                robots.Add(new Robot
+                {
+                    Position = new Point(x, area.Height - 1),
+                    Velocity = new Size(0, 0)
+                });
+            }
+
+            // Put at top
+            robots.Add(new Robot
+            {
+                Position = new Point(area.Width / 2),
+                Velocity = new Size(0, 0)
+            });
+
+            // Put at sides
+            for (int y = 1; y < area.Height; ++y)
+            {
+                robots.Add(new Robot
+                {
+                    Position = new Point(area.Width / 2 - y, y),
+                    Velocity = new Size(0, 0)
+                });
+
+                robots.Add(new Robot
+                {
+                    Position = new Point(area.Width / 2 + y, y),
+                    Velocity = new Size(0, 0)
+                });
+            }
+
+            var a = HasTABottomLine(robots, area);
+            var b = HasTAMiddleOfTop(robots, area);
+            var c = HasTASides(robots, area);
+        }
+
+        private static void Visualise(List<Robot> robots, Size area)
+        {
+            string[] screen = new string[area.Height];
+
+            for (int i = 0; i < area.Height; ++i)
+            {
+                screen[i] = "".PadRight(area.Width, ' ');
+            }
+
+            foreach (Robot robot in robots)
+            {
+                Common.UpdateMatrix(screen, robot.Position, '*');
+            }
+
+            Console.Clear();
+
+            foreach (string row in screen)
+            {
+                Console.WriteLine(row);
+            }
+        }
+
+        private static int StartingConditionRepeats(List<Robot> robots,
+            Size area, List<Point> origPoints)
+        {
+            int seconds = 0;
+
+            while (true)
+            {
+                foreach (Robot robot in robots)
+                {
+                    robot.Advance(1, area);
+                }
+
+                if (robots.All((r) => origPoints.Any((p) => r.Position == p)))
+                {
+                    break;
+                }
+
+                ++seconds;
+            }
+
+            return seconds;
+        }
+
         public async Task Solve(bool isReal)
         {
             string input = await Common.ReadFile(isReal, DayNum);
@@ -120,6 +258,45 @@ namespace AoC2024Unified.Solutions
             int safetyFactor = counts.Aggregate((x, y) => x * y);
 
             Console.WriteLine($"The safety factor is {safetyFactor}");
+
+            if (isReal)
+            {
+                var newRobots = ParseInput(input);
+                var origPoints = newRobots.Select((r) => r.Position).ToList();
+
+                int seconds = 0;
+
+                // Solution found by visual inspection! 7083
+                while (true)
+                {
+                    Visualise(newRobots, area);
+                    Console.WriteLine($"{seconds}");
+
+                    var key = Console.ReadKey();
+                    if (key.Key == ConsoleKey.RightArrow)
+                    {
+                        foreach (Robot robot in newRobots)
+                        {
+                            robot.Advance(1, area);
+                        }
+
+                        ++seconds;
+                    }
+                    else if (key.Key == ConsoleKey.LeftArrow)
+                    {
+                        foreach (Robot robot in newRobots)
+                        {
+                            robot.Advance(-1, area);
+                        }
+
+                        --seconds;
+                    }
+                    else if (key.Key == ConsoleKey.Escape)
+                    {
+                        break;
+                    }
+                }
+            }
         }
     }
 }
