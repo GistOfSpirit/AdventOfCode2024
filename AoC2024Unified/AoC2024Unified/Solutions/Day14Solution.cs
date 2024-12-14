@@ -18,16 +18,16 @@ namespace AoC2024Unified.Solutions
             public Point Position { get; set; }
             public Size Velocity { get; set; }
 
-            private static int ConstrainTo(int value, int max)
+            private static int ConstrainTo(int value, int areaSize)
             {
                 int result = value;
 
-                while (result < 0)
+                if (result < 0)
                 {
-                    result += max;
+                    result = (result % areaSize) + areaSize;
                 }
 
-                result %= max;
+                result %= areaSize;
 
                 return result;
             }
