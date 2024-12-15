@@ -10,11 +10,13 @@ namespace AoC2024Unified.Solutions
         private const char WallChar = '#';
         private const char BoxChar = 'O';
         private const char RobotChar = '@';
+        private const int BigWidth = 2;
+        private const int SmallWidth = 1;
 
         private static (
             List<ILocateable> map,
             List<Direction> instructions
-        ) ParseInput(string input)
+        ) ParseInput(string input, bool bigStuff)
         {
             string[] inputParts
                 = input.Split(Environment.NewLine + Environment.NewLine,
@@ -24,17 +26,32 @@ namespace AoC2024Unified.Solutions
 
             List<ILocateable> map = [];
 
+            int stuffWidth = bigStuff ? BigWidth : SmallWidth;
+
             for (int row = 0; row < matrix.Length; ++row)
             {
                 for (int col = 0; col < matrix[row].Length; ++col)
                 {
-                    Point location = new(col, row);
+                    int resultCol = bigStuff ? BigWidth * col : col;
+                    Point location = new(resultCol, row);
 
                     ILocateable? locateable = matrix[row][col] switch
                     {
-                        WallChar => new Wall { Location = location },
-                        BoxChar => new Box { Location = location },
-                        RobotChar => new Robot { Location = location },
+                        WallChar => new Wall
+                        {
+                            Location = location,
+                            Width = stuffWidth
+                        },
+                        BoxChar => new Box
+                        {
+                            Location = location,
+                            Width = stuffWidth
+                        },
+                        RobotChar => new Robot
+                        {
+                            Location = location,
+                            Width = SmallWidth // Robot is always small
+                        },
                         _ => null
                     };
 
@@ -54,12 +71,13 @@ namespace AoC2024Unified.Solutions
             return (map, instructions);
         }
 
-        private static async Task SolveFile(bool isReal, string sub)
+        private static async Task SolveFile(bool isReal, string sub,
+            bool bigStuff)
         {
             string input = await Common.ReadFile(isReal, DayNum, sub);
 
             (List<ILocateable> map,
-                List<Direction> instructions) = ParseInput(input);
+                List<Direction> instructions) = ParseInput(input, bigStuff);
 
             Robot robot = (Robot)map.First((l) => l is Robot);
 
@@ -80,12 +98,14 @@ namespace AoC2024Unified.Solutions
         {
             if (!isReal)
             {
-                await SolveFile(isReal, "a");
-                await SolveFile(isReal, "b");
+                await SolveFile(isReal, "a", false);
+                await SolveFile(isReal, "b", false);
+                await SolveFile(isReal, "b", true);
             }
             else
             {
-                await SolveFile(isReal, "");
+                await SolveFile(isReal, "", false);
+                await SolveFile(isReal, "", true);
             }
         }
     }

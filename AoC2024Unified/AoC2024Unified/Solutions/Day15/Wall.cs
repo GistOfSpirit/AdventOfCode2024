@@ -6,6 +6,7 @@ namespace AoC2024Unified.Solutions.Day15
     public class Wall : ILocateable
     {
         public Point Location { get; set; }
+        public int Width { get; set; }
 
         public bool CanMove(List<ILocateable> map, Direction direction)
             => false;
