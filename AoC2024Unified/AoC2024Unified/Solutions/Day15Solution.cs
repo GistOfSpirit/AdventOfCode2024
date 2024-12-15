@@ -56,6 +56,16 @@ namespace AoC2024Unified.Solutions
                             )
                         });
                     }
+                    else if (locateable is Wall && bigStuff)
+                    {
+                        map.Add(new Wall
+                        {
+                            Location = new Point(
+                                locateable.Location.X + 1,
+                                locateable.Location.Y
+                            )
+                        });
+                    }
                 }
             }
 
@@ -89,6 +99,58 @@ namespace AoC2024Unified.Solutions
                 .Sum((b) => b.Coordinate);
 
             Console.WriteLine($"The sum of coords is {coordSum}");
+
+            // Visualise(map);
+        }
+
+        private static void Visualise(List<ILocateable> map)
+        {
+            int width = map.Max((l) => l.Location.X) + 1;
+            int height = map.Max((l) => l.Location.Y) + 1;
+
+            string[] matrix = new string[height];
+
+            for (int i = 0; i < height; ++i)
+            {
+                matrix[i] = "".PadRight(width, ' ');
+            }
+
+            foreach (ILocateable l in map)
+            {
+                char c;
+
+                if (l is Wall)
+                {
+                    c = '#';
+                }
+                else if (l is Robot)
+                {
+                    c = '@';
+                }
+                else if (l is BoxMain)
+                {
+                    c = 'O';
+                }
+                else if (l is BoxWest)
+                {
+                    c = '[';
+                }
+                else if (l is BoxEast)
+                {
+                    c = ']';
+                }
+                else
+                {
+                    c = '.';
+                }
+
+                Common.UpdateMatrix(matrix, l.Location, c);
+            }
+
+            foreach (string row in matrix)
+            {
+                Console.WriteLine(row);
+            }
         }
 
         public async Task Solve(bool isReal)
@@ -97,6 +159,7 @@ namespace AoC2024Unified.Solutions
             {
                 await SolveFile(isReal, "a", false);
                 await SolveFile(isReal, "b", false);
+                await SolveFile(isReal, "c", true);
                 await SolveFile(isReal, "b", true);
             }
             else

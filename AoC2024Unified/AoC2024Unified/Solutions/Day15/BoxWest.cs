@@ -44,14 +44,22 @@ namespace AoC2024Unified.Solutions.Day15
 
         public override void Move(List<ILocateable> map, Direction direction)
         {
-            if (direction == Direction.East)
+            Move(map, direction, false);
+        }
+
+        public void Move(List<ILocateable> map, Direction direction,
+            bool movedOther)
+        {
+            if (direction == Direction.East
+                || direction == Direction.West
+                || movedOther)
             {
                 base.Move(map, direction);
             }
             else
             {
+                GetBoxEast(map).Move(map, direction, true);
                 base.Move(map, direction);
-                GetBoxEast(map).Move(map, direction);
             }
         }
     }
