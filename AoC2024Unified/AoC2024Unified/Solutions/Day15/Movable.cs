@@ -7,7 +7,8 @@ namespace AoC2024Unified.Solutions.Day15
     {
         public Point Location { get; set; }
 
-        public bool Move(List<ILocateable> map, Direction direction)
+        private bool TryMove(List<ILocateable> map, Direction direction,
+            bool doMove)
         {
             Point wantedLocation = Directions.GetNextPoint(direction, Location);
 
@@ -16,17 +17,25 @@ namespace AoC2024Unified.Solutions.Day15
 
             if (
                 objectAhead == null
-                || (
-                    objectAhead is Movable movable
-                    && movable.Move(map, direction)
-                )
+                || objectAhead.CanMove(map, direction)
             )
             {
-                Location = wantedLocation;
+                if (doMove)
+                {
+                    objectAhead?.Move(map, direction);
+                    Location = wantedLocation;
+                }
+
                 return true;
             }
 
             return false;
         }
+
+        public bool CanMove(List<ILocateable> map, Direction direction)
+            => TryMove(map, direction, false);
+
+        public void Move(List<ILocateable> map, Direction direction)
+            => TryMove(map, direction, true);
     }
 }
