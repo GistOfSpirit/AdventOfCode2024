@@ -1,6 +1,6 @@
 namespace AoC2024Unified.Solutions.Day15
 {
-    public class Box : Movable
+    public class BoxMain : Movable
     {
         private const int YCoordFactor = 100;
 

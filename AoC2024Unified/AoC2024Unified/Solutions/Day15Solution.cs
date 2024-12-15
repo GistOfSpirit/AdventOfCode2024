@@ -14,7 +14,7 @@ namespace AoC2024Unified.Solutions
         private static (
             List<ILocateable> map,
             List<Direction> instructions
-        ) ParseInput(string input)
+        ) ParseInput(string input, bool bigStuff)
         {
             string[] inputParts
                 = input.Split(Environment.NewLine + Environment.NewLine,
@@ -28,12 +28,15 @@ namespace AoC2024Unified.Solutions
             {
                 for (int col = 0; col < matrix[row].Length; ++col)
                 {
-                    Point location = new(col, row);
+                    int resultCol = bigStuff ? col * 2 : col;
+                    Point location = new(resultCol, row);
 
                     ILocateable? locateable = matrix[row][col] switch
                     {
                         WallChar => new Wall { Location = location },
-                        BoxChar => new Box { Location = location },
+                        BoxChar => bigStuff
+                            ? new BoxWest { Location = location }
+                            : new BoxMain { Location = location },
                         RobotChar => new Robot { Location = location },
                         _ => null
                     };
@@ -41,6 +44,27 @@ namespace AoC2024Unified.Solutions
                     if (locateable != null)
                     {
                         map.Add(locateable);
+                    }
+
+                    if (locateable is BoxWest)
+                    {
+                        map.Add(new BoxEast
+                        {
+                            Location = new Point(
+                                locateable.Location.X + 1,
+                                locateable.Location.Y
+                            )
+                        });
+                    }
+                    else if (locateable is Wall && bigStuff)
+                    {
+                        map.Add(new Wall
+                        {
+                            Location = new Point(
+                                locateable.Location.X + 1,
+                                locateable.Location.Y
+                            )
+                        });
                     }
                 }
             }
@@ -54,12 +78,13 @@ namespace AoC2024Unified.Solutions
             return (map, instructions);
         }
 
-        private static async Task SolveFile(bool isReal, string sub)
+        private static async Task SolveFile(bool isReal, string sub,
+            bool bigStuff)
         {
             string input = await Common.ReadFile(isReal, DayNum, sub);
 
             (List<ILocateable> map,
-                List<Direction> instructions) = ParseInput(input);
+                List<Direction> instructions) = ParseInput(input, bigStuff);
 
             Robot robot = (Robot)map.First((l) => l is Robot);
 
@@ -69,23 +94,78 @@ namespace AoC2024Unified.Solutions
             }
 
             int coordSum = map
-                .Where((l) => l is Box)
-                .Cast<Box>()
+                .Where((l) => l is BoxMain)
+                .Cast<BoxMain>()
                 .Sum((b) => b.Coordinate);
 
             Console.WriteLine($"The sum of coords is {coordSum}");
+
+            // Visualise(map);
+        }
+
+        private static void Visualise(List<ILocateable> map)
+        {
+            int width = map.Max((l) => l.Location.X) + 1;
+            int height = map.Max((l) => l.Location.Y) + 1;
+
+            string[] matrix = new string[height];
+
+            for (int i = 0; i < height; ++i)
+            {
+                matrix[i] = "".PadRight(width, ' ');
+            }
+
+            foreach (ILocateable l in map)
+            {
+                char c;
+
+                if (l is Wall)
+                {
+                    c = '#';
+                }
+                else if (l is Robot)
+                {
+                    c = '@';
+                }
+                else if (l is BoxMain)
+                {
+                    c = 'O';
+                }
+                else if (l is BoxWest)
+                {
+                    c = '[';
+                }
+                else if (l is BoxEast)
+                {
+                    c = ']';
+                }
+                else
+                {
+                    c = '.';
+                }
+
+                Common.UpdateMatrix(matrix, l.Location, c);
+            }
+
+            foreach (string row in matrix)
+            {
+                Console.WriteLine(row);
+            }
         }
 
         public async Task Solve(bool isReal)
         {
             if (!isReal)
             {
-                await SolveFile(isReal, "a");
-                await SolveFile(isReal, "b");
+                await SolveFile(isReal, "a", false);
+                await SolveFile(isReal, "b", false);
+                await SolveFile(isReal, "c", true);
+                await SolveFile(isReal, "b", true);
             }
             else
             {
-                await SolveFile(isReal, "");
+                await SolveFile(isReal, "", false);
+                await SolveFile(isReal, "", true);
             }
         }
     }
