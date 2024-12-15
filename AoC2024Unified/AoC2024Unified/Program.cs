@@ -1,6 +1,6 @@
 ﻿using AoC2024Unified.Solutions;
 
-int dayNum = 14;
+int dayNum = 15;
 bool isReal = false;
 
 Type? daySolutionType = Type.GetType(

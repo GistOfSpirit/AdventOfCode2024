@@ -17,6 +17,11 @@ namespace AoC2024Unified.Types
 
     public static class Directions
     {
+        private const char NorthChar = '^';
+        private const char EastChar = '>';
+        private const char SouthChar = 'v';
+        private const char WestChar = '<';
+
         public static List<Direction> GetPerpendicular(this Direction dir)
             => dir switch
             {
@@ -60,5 +65,15 @@ namespace AoC2024Unified.Types
         public static List<Direction> GetSoutheastHalf()
             => [Direction.Northeast, Direction.East,
                 Direction.South, Direction.Southeast];
+
+        public static Direction? FromChar(char dirChar)
+            => dirChar switch
+            {
+                NorthChar => Direction.North,
+                EastChar => Direction.East,
+                SouthChar => Direction.South,
+                WestChar => Direction.West,
+                _ => null
+            };
     }
 }

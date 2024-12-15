@@ -43,11 +43,12 @@ namespace AoC2024Unified.Solutions
         {
             string fileContents = await ReadFile(isReal, day, sub);
 
-            string[] rows = fileContents.Split(Environment.NewLine,
-                StringSplitOptions.RemoveEmptyEntries);
-
-            return rows;
+            return ConvertToMatrix(fileContents);
         }
+
+        public static string[] ConvertToMatrix(string fileContents)
+            => fileContents.Split(Environment.NewLine,
+                StringSplitOptions.RemoveEmptyEntries);
 
         public static void UpdateMatrix(
             string[] matrix, Point loc, char newChar)
