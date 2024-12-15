@@ -14,7 +14,7 @@ namespace AoC2024Unified.Solutions
         private static (
             List<ILocateable> map,
             List<Direction> instructions
-        ) ParseInput(string input)
+        ) ParseInput(string input, bool bigStuff)
         {
             string[] inputParts
                 = input.Split(Environment.NewLine + Environment.NewLine,
@@ -28,12 +28,15 @@ namespace AoC2024Unified.Solutions
             {
                 for (int col = 0; col < matrix[row].Length; ++col)
                 {
-                    Point location = new(col, row);
+                    int resultCol = bigStuff ? col * 2 : col;
+                    Point location = new(resultCol, row);
 
                     ILocateable? locateable = matrix[row][col] switch
                     {
                         WallChar => new Wall { Location = location },
-                        BoxChar => new Box { Location = location },
+                        BoxChar => bigStuff
+                            ? new BoxWest { Location = location }
+                            : new BoxMain { Location = location },
                         RobotChar => new Robot { Location = location },
                         _ => null
                     };
@@ -41,6 +44,17 @@ namespace AoC2024Unified.Solutions
                     if (locateable != null)
                     {
                         map.Add(locateable);
+                    }
+
+                    if (locateable is BoxWest)
+                    {
+                        map.Add(new BoxEast
+                        {
+                            Location = new Point(
+                                locateable.Location.X + 1,
+                                locateable.Location.Y
+                            )
+                        });
                     }
                 }
             }
@@ -54,12 +68,13 @@ namespace AoC2024Unified.Solutions
             return (map, instructions);
         }
 
-        private static async Task SolveFile(bool isReal, string sub)
+        private static async Task SolveFile(bool isReal, string sub,
+            bool bigStuff)
         {
             string input = await Common.ReadFile(isReal, DayNum, sub);
 
             (List<ILocateable> map,
-                List<Direction> instructions) = ParseInput(input);
+                List<Direction> instructions) = ParseInput(input, bigStuff);
 
             Robot robot = (Robot)map.First((l) => l is Robot);
 
@@ -69,8 +84,8 @@ namespace AoC2024Unified.Solutions
             }
 
             int coordSum = map
-                .Where((l) => l is Box)
-                .Cast<Box>()
+                .Where((l) => l is BoxMain)
+                .Cast<BoxMain>()
                 .Sum((b) => b.Coordinate);
 
             Console.WriteLine($"The sum of coords is {coordSum}");
@@ -80,12 +95,14 @@ namespace AoC2024Unified.Solutions
         {
             if (!isReal)
             {
-                await SolveFile(isReal, "a");
-                await SolveFile(isReal, "b");
+                await SolveFile(isReal, "a", false);
+                await SolveFile(isReal, "b", false);
+                await SolveFile(isReal, "b", true);
             }
             else
             {
-                await SolveFile(isReal, "");
+                await SolveFile(isReal, "", false);
+                await SolveFile(isReal, "", true);
             }
         }
     }
