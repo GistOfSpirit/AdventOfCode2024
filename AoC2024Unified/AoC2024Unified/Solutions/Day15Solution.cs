@@ -42,35 +42,34 @@ namespace AoC2024Unified.Solutions
                     if (locateable != null)
                     {
                         map.Add(locateable);
-                    }
 
-                    if (bigStuff)
-                    {
-                        if (locateable is Box box)
+                        if (bigStuff)
                         {
-                            var pairedBox = new Box
-                            {
-                                Location = new Point(
-                                    locateable.Location.X + 1,
-                                    locateable.Location.Y
-                                ),
-                                DisableDetection = true,
-                                PairedBox = box
-                            };
+                            Point pairedObjectLoc = new(
+                                locateable.Location.X + 1,
+                                locateable.Location.Y
+                            );
 
-                            box.PairedBox = pairedBox;
-
-                            map.Add(pairedBox);
-                        }
-                        else if (locateable is Wall)
-                        {
-                            map.Add(new Wall
+                            if (locateable is Box box)
                             {
-                                Location = new Point(
-                                    locateable.Location.X + 1,
-                                    locateable.Location.Y
-                                )
-                            });
+                                var pairedBox = new Box
+                                {
+                                    Location = pairedObjectLoc,
+                                    DisableDetection = true,
+                                    PairedBox = box
+                                };
+
+                                box.PairedBox = pairedBox;
+
+                                map.Add(pairedBox);
+                            }
+                            else if (locateable is Wall)
+                            {
+                                map.Add(new Wall
+                                {
+                                    Location = pairedObjectLoc
+                                });
+                            }
                         }
                     }
                 }

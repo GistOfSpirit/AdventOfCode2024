@@ -51,8 +51,8 @@ namespace AoC2024Unified.Solutions.Day15
             }
             else
             {
-                PairedBox.Move(map, direction, true);
                 base.Move(map, direction);
+                PairedBox.Move(map, direction, true);
             }
         }
     }
