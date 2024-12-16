@@ -54,6 +54,9 @@ namespace AoC2024Unified.Types
                 _ => throw new InvalidEnumArgumentException("Invalid direction")
             };
 
+        public static bool IsCardinal(this Direction dir)
+            => GetCardinal().Contains(dir);
+
         public static List<Point> GetPerpendicularPoints(
             this Direction dir, Point p)
             => dir.GetPerpendicular().Select((d) => d.GetNextPoint(p)).ToList();
@@ -75,5 +78,20 @@ namespace AoC2024Unified.Types
                 WestChar => Direction.West,
                 _ => null
             };
+
+        public static Direction? GetFromTo(Point from, Point to)
+        {
+            var allDirs = (Direction[])Enum.GetValues(typeof(Direction));
+
+            foreach (Direction dir in allDirs)
+            {
+                if (dir.GetNextPoint(from) == to)
+                {
+                    return dir;
+                }
+            }
+
+            return null;
+        }
     }
 }
