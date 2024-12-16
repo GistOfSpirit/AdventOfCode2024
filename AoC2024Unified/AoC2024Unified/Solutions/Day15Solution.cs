@@ -34,9 +34,7 @@ namespace AoC2024Unified.Solutions
                     ILocateable? locateable = matrix[row][col] switch
                     {
                         WallChar => new Wall { Location = location },
-                        BoxChar => bigStuff
-                            ? new BoxWest { Location = location }
-                            : new BoxMain { Location = location },
+                        BoxChar => new Box { Location = location },
                         RobotChar => new Robot { Location = location },
                         _ => null
                     };
@@ -46,25 +44,34 @@ namespace AoC2024Unified.Solutions
                         map.Add(locateable);
                     }
 
-                    if (locateable is BoxWest)
+                    if (bigStuff)
                     {
-                        map.Add(new BoxEast
+                        if (locateable is Box box)
                         {
-                            Location = new Point(
-                                locateable.Location.X + 1,
-                                locateable.Location.Y
-                            )
-                        });
-                    }
-                    else if (locateable is Wall && bigStuff)
-                    {
-                        map.Add(new Wall
+                            var pairedBox = new Box
+                            {
+                                Location = new Point(
+                                    locateable.Location.X + 1,
+                                    locateable.Location.Y
+                                ),
+                                DisableDetection = true,
+                                PairedBox = box
+                            };
+
+                            box.PairedBox = pairedBox;
+
+                            map.Add(pairedBox);
+                        }
+                        else if (locateable is Wall)
                         {
-                            Location = new Point(
-                                locateable.Location.X + 1,
-                                locateable.Location.Y
-                            )
-                        });
+                            map.Add(new Wall
+                            {
+                                Location = new Point(
+                                    locateable.Location.X + 1,
+                                    locateable.Location.Y
+                                )
+                            });
+                        }
                     }
                 }
             }
@@ -94,8 +101,8 @@ namespace AoC2024Unified.Solutions
             }
 
             int coordSum = map
-                .Where((l) => l is BoxMain)
-                .Cast<BoxMain>()
+                .Where((l) => l is Box)
+                .Cast<Box>()
                 .Sum((b) => b.Coordinate);
 
             Console.WriteLine($"The sum of coords is {coordSum}");
@@ -127,17 +134,24 @@ namespace AoC2024Unified.Solutions
                 {
                     c = '@';
                 }
-                else if (l is BoxMain)
+                else if (l is Box box)
                 {
-                    c = 'O';
-                }
-                else if (l is BoxWest)
-                {
-                    c = '[';
-                }
-                else if (l is BoxEast)
-                {
-                    c = ']';
+                    if (box.PairedBox == null)
+                    {
+                        c = 'O';
+                    }
+                    else if (box.Location.X == Math.Min(
+                            box.Location.X,
+                            box.PairedBox.Location.X
+                        )
+                    )
+                    {
+                        c = '[';
+                    }
+                    else
+                    {
+                        c = ']';
+                    }
                 }
                 else
                 {

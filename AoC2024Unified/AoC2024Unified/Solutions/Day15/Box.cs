@@ -2,24 +2,15 @@ using AoC2024Unified.Types;
 
 namespace AoC2024Unified.Solutions.Day15
 {
-    public class BoxEast : Movable
+    public class Box : Movable
     {
-        private BoxWest GetBoxWest(List<ILocateable> map)
-        {
-            ILocateable? objectWest = map.FirstOrDefault(
-                (l) => l.Location.X == Location.X - 1
-                && l.Location.Y == Location.Y);
+        private const int YCoordFactor = 100;
 
-            if (
-                objectWest != null
-                && objectWest is BoxWest boxWest
-                )
-            {
-                return boxWest;
-            }
-
-            throw new InvalidOperationException("Invalid box pair placement");
-        }
+        public Box? PairedBox { get; set; } = null;
+        public bool DisableDetection { get; set; } = false;
+        public int Coordinate => DisableDetection
+            ? 0
+            : (Location.Y * YCoordFactor) + Location.X;
 
         public override bool CanMove(List<ILocateable> map, Direction direction)
         {
@@ -27,18 +18,19 @@ namespace AoC2024Unified.Solutions.Day15
         }
 
         public bool CanMove(List<ILocateable> map, Direction direction,
-            bool checkedOther)
+            bool checkedPaired)
         {
-            if (direction == Direction.East
+            if (PairedBox == null
+                || direction == Direction.East
                 || direction == Direction.West
-                || checkedOther)
+                || checkedPaired)
             {
                 return base.CanMove(map, direction);
             }
             else
             {
                 return base.CanMove(map, direction)
-                    && GetBoxWest(map).CanMove(map, direction, true);
+                    && PairedBox.CanMove(map, direction, true);
             }
         }
 
@@ -50,7 +42,8 @@ namespace AoC2024Unified.Solutions.Day15
         public void Move(List<ILocateable> map, Direction direction,
             bool movedOther)
         {
-            if (direction == Direction.East
+            if (PairedBox == null
+                || direction == Direction.East
                 || direction == Direction.West
                 || movedOther)
             {
@@ -58,7 +51,7 @@ namespace AoC2024Unified.Solutions.Day15
             }
             else
             {
-                GetBoxWest(map).Move(map, direction, true);
+                PairedBox.Move(map, direction, true);
                 base.Move(map, direction);
             }
         }
