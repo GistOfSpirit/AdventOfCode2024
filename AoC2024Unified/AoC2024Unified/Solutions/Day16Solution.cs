@@ -58,6 +58,60 @@ namespace AoC2024Unified.Solutions
             return futurePaths;
         }
 
+        private static int GetLowestScore(Maze maze,
+            List<Point> pastPoints, Direction currDir,
+            Dictionary<(Point point, Direction dir), int> pastScores)
+        {
+            Point currLocation = pastPoints[^1];
+
+            if (pastScores.TryGetValue((currLocation, currDir), out int score))
+            {
+                return score;
+            }
+
+            List<int> futureMoveScores = [];
+
+            foreach (Direction dir in Directions.GetCardinal())
+            {
+                Point nextPoint = dir.GetNextPoint(currLocation);
+
+                if (
+                    maze.Walls.Contains(nextPoint)
+                    || pastPoints.Contains(nextPoint)
+                )
+                {
+                    continue;
+                }
+
+                List<Point> newPastPoints = [.. pastPoints];
+                newPastPoints.Add(nextPoint);
+
+                int moveScore = ScoreMove(currLocation, currDir, nextPoint);
+
+                if (nextPoint == maze.EndPoint)
+                {
+                    return moveScore;
+                }
+
+                int futureLowestScore = GetLowestScore(maze, newPastPoints, dir,
+                    pastScores);
+
+                if (futureLowestScore >= 0)
+                {
+                    futureMoveScores.Add(moveScore + futureLowestScore);
+                }
+            }
+
+            if (futureMoveScores.Count > 0)
+            {
+                int currScore = futureMoveScores.Min();
+                pastScores[(currLocation, currDir)] = currScore;
+                return currScore;
+            }
+
+            return -1;
+        }
+
         private static Maze ParseInput(string[] matrix)
         {
             Maze maze = new();
@@ -84,6 +138,19 @@ namespace AoC2024Unified.Solutions
             }
 
             return maze;
+        }
+
+        private static int ScoreMove(Point currPoint, Direction dir,
+            Point nextPoint)
+        {
+            int score = MoveScore;
+
+            if (nextPoint != dir.GetNextPoint(currPoint))
+            {
+                score += TurnScore;
+            }
+
+            return score;
         }
 
         private static int ScorePath(List<Point> path)
@@ -125,14 +192,17 @@ namespace AoC2024Unified.Solutions
 
             Maze maze = ParseInput(matrix);
 
-            List<List<Point>> paths = FindPaths(maze, []);
+            int lowestScore = GetLowestScore(
+                maze, [maze.StartPoint], InitDirection, []);
 
-            int lowestScore = ScorePath(paths[0]);
+            // List<List<Point>> paths = FindPaths(maze, []);
 
-            foreach (List<Point> path in paths[1..])
-            {
-                lowestScore = Math.Min(lowestScore, ScorePath(path));
-            }
+            // int lowestScore = ScorePath(paths[0]);
+
+            // foreach (List<Point> path in paths[1..])
+            // {
+            //     lowestScore = Math.Min(lowestScore, ScorePath(path));
+            // }
 
             Console.WriteLine($"Lowest score is {lowestScore}");
         }
